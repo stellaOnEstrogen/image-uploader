@@ -540,9 +540,11 @@ async function main(args: Arg[]) {
             const hashedPassword = await bcrypt.hash(password, 10);
     
             // Insert new user into the database
-            await db.statement('INSERT INTO Admins (Username, Password) VALUES (?, ?)', [
+            await db.statement('INSERT INTO Admins (Username, Password, ProfilePicture, Bio) VALUES (?, ?, ?, ?)', [
                 username.toLowerCase().trim(),
                 hashedPassword,
+                'default.jpg',
+                `Hello, I'm ${username}!`,
             ]);
     
             // Redirect to login page after successful registration
