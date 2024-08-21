@@ -57,6 +57,10 @@ const constants = {
       route: "/api/get-images"
     }
   ],
+  /**
+   * File Directory
+    */
+  FILE_DIRECTORY: null,
 };
 
 export default constants;

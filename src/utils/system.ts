@@ -4,7 +4,7 @@ import os from 'node:os';
 import constants from '../constants';
 import AppDB from '../classes/AppDB';
 
-const PIC_DIR: string | null = null;
+const PIC_DIR: string | null = constants.FILE_DIRECTORY;
 
 export function getAppDataDir(): string {
 	let appDataDir = '';
