@@ -296,6 +296,10 @@ async function main(args: Arg[]) {
     server.get('/avatars/:fileName', async (req: RequestWithSession, res: Response) => {
         const fileName = req.params.fileName;
 
+        if (fileName === 'default.jpg') {
+            res.redirect("/assets/default.jpg");
+        }
+
 
         const imagePath = pJoin(picDir.avatar, fileName);
 
