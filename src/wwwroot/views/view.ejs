@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+
+    <!-- Bootstrap CSS -->
+    <link 
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+        rel="stylesheet" 
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+        crossorigin="anonymous"
+    />
+	
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="<%= image.Caption %>">
+    <meta property="og:url" content="<%= link %>">
+    <meta property="og:site_name" content="Media Uploader by x.com/stellerDev">
+    <meta property="og:locale" content="en_US">
+<% if (image.ContentType.includes("image")) { %>
+	<meta property="og:image" content="<%= link %>">
+	<meta property="og:image:width" content="1280">
+	<meta property="og:image:height" content="720">
+	<meta property="og:image:type" content="<%= image.ContentType %>">
+	<meta property="twitter:image" content="<%= link %>">
+	<meta property="twitter:image:width" content="1280">
+	<meta property="twitter:image:height" content="720">
+	<meta property="twitter:image:alt" content="<%= image.Caption %>">
+	<meta property="twitter:card" content="summary_large_image">
+	<meta property="twitter:site" content="@x.com/stellerDev">
+	<meta property="twitter:creator" content="@x.com/stellerDev">
+<% } else { %>
+	<meta property="og:video" content="<%= link %>">
+	<meta property="og:video:width" content="1280">
+	<meta property="og:video:height" content="720">
+	<meta property="og:video:type" content="<%= image.ContentType %>">
+	<meta property="twitter:player" content="<%= link %>">
+	<meta property="twitter:player:width" content="1280">
+	<meta property="twitter:player:height" content="720">
+	<meta property="twitter:player:stream" content="<%= link %>">
+	<meta property="twitter:card" content="player">
+	<meta property="twitter:site" content="@x.com/stellerDev">
+	<meta property="twitter:creator" content="@x.com/stellerDev">
+
+	<% } %>
+	
+
+    <!-- Bootstrap JS and Popper.js (loaded after HTML parsing) -->
+    <script 
+        src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" 
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" 
+        crossorigin="anonymous" 
+        defer
+    ></script>
+    <script 
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" 
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" 
+        crossorigin="anonymous" 
+        defer
+    ></script>
+</head>
+<body>
+	<%- include('_partials/header') %>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h3><%= image.Caption %></h3>
+            </div>
+            <div class="card-body text-center">
+                <% if (image.ContentType.includes("image")) { %>
+                    <img
+                        src="<%= link %>"
+                        alt="<%= image.Caption %>"
+                        class="img-fluid rounded mx-auto d-block"
+                        aria-label="Uploaded Image"
+                    />
+                <% } else { %>
+                    <video
+                        src="<%= link %>"
+                        class="img-fluid rounded mx-auto d-block"
+                        controls
+                        aria-label="Uploaded Video"
+                    ></video>
+                <% } %>
+
+                <p class="mt-3">Views: <%= image.Views.toLocaleString() %></p>
+                <p>Uploaded by: 
+                    <a href="/admins/<%= uploadedBy.Username %>"><%= uploadedBy.Username %></a>
+                </p>
+                <p>Uploaded on: <%= new Date(image.UploadedAt).toLocaleDateString() %> 
+                    <%= new Date(image.UploadedAt).toLocaleTimeString() %>
+                </p>
+            </div>
+            <div class="card-footer text-end">
+                <a 
+                    href="<%= link %>" 
+                    class="btn btn-primary" 
+                    download="<%= image.FileName %>"
+                    aria-label="Download Media"
+                >
+                    Download
+                </a>
+                <% if (canDelete) { %>
+                    <a 
+                        href="/delete/<%= image.Id %>" 
+                        class="btn btn-danger" 
+                        aria-label="Delete Media"
+                    >
+                        Delete
+                    </a>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

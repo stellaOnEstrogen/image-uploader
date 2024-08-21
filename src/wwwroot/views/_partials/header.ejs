@@ -1,0 +1,60 @@
+<header class="p-3 mb-3 border-bottom">
+    <div class="container">
+      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+        <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+          <li><a href="/" class="nav-link px-2 link-body-emphasis">Home</a></li>
+          <li><a href="/stats" class="nav-link px-2 link-body-emphasis">Stats</a></li>
+          <li><a href="/upload" class="nav-link px-2 link-body-emphasis">Upload</a></li>
+        </ul>
+
+
+        <% if (userData) { %>
+            <div class="dropdown text-end">
+                <a href="/admins/<%= userData.Username %>" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src="/avatars/<%= userData.ProfilePicture %>" alt="<%= userData.Username %>'s Avatar" width="32" height="32" class="rounded-circle">
+                </a>
+                <ul class="dropdown-menu text-small">
+                  <li><a class="dropdown-item" href="/upload">Upload</a></li>
+                    <li><a class="dropdown-item" href="/admins/<%= userData.Username %>">Profile</a></li>
+                    <li><a class="dropdown-item" href="/settings">Settings</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="/logout">Sign out</a></li>
+                </ul>
+              </div>
+        <% } else { %>
+            <a href="/login" class="btn btn-outline-primary me-2" id="login">Login</a>
+            <a href="/register" class="btn btn-primary" id="register">Register</a>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <script>
+    const headerLinks = document.querySelectorAll('.nav-link');
+  
+    headerLinks.forEach(link => {
+      const linkUrl = new URL(link.href);
+      const currentUrl = new URL(window.location.href);
+  
+      if (currentUrl.pathname === linkUrl.pathname) {
+        link.classList.add('link-secondary');
+        link.classList.remove('link-body-emphasis');
+      }
+    });
+
+    const loginButton = document.getElementById('login');
+    const registerButton = document.getElementById('register');
+
+    if (loginButton) {
+      if (window.location.pathname != '/' || window.location.pathname != '/login' || window.location.pathname != '/register') {
+        loginButton.href = '/login?returnTo=' + window.location.pathname;
+      }
+    }
+
+    if (registerButton) {
+      if (window.location.pathname != '/' || window.location.pathname != '/login' || window.location.pathname != '/register') {
+        registerButton.href = '/register?returnTo=' + window.location.pathname;
+      }
+    }
+  </script>
+  

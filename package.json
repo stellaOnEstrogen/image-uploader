@@ -1,0 +1,72 @@
+{
+	"name": "image-uploder",
+	"version": "1.0.0-rc.1",
+	"description": "A simple image uploader",
+	"bin": {
+		"image-uploder": "./bin/app.js"
+	},
+	"main": "./bin/app.js",
+	"directories": {
+		"doc": "docs"
+	},
+	"scripts": {
+		"format": "prettier --cache --write . --ignore-path .prettierignore --plugin=prettier-plugin-ejs",
+		"build": "tsc -p tsconfig.json",
+		"prepublishOnly": "npm run build",
+		"test": "jest",
+		"dev": "cross-env NODE_ENV=development ts-node -r tsconfig-paths/register ./src/app.ts",
+		"copy": "node ./scripts/copy.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/stellaOnEstrogen/image-uploader.git"
+	},
+	"keywords": [],
+	"author": "stellaOnEstrogen",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/stellaOnEstrogen/image-uploader/issues"
+	},
+	"homepage": "https://github.com/stellaOnEstrogen/image-uploader#readme",
+	"files": [
+		"bin/",
+		"src/",
+		"scripts/",
+		"docs/"
+	],
+	"devDependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"@types/express": "^4.17.21",
+		"@types/express-session": "^1.18.0",
+		"@types/jest": "^29.5.12",
+		"@types/multer": "^1.4.11",
+		"@types/node": "^22.0.0",
+		"@types/ws": "^8.5.12",
+		"jest": "^29.7.0",
+		"prettier": "^3.3.3",
+		"prettier-plugin-ejs": "^1.0.3",
+		"ts-jest": "^29.2.3",
+		"ts-node": "^10.9.2",
+		"tsconfig-paths": "^4.2.0",
+		"typescript": "^5.5.4"
+	},
+	"dependencies": {
+		"axios": "^1.7.2",
+		"bcrypt": "^5.1.1",
+		"chalk": "^4.1.2",
+		"cross-env": "^7.0.3",
+		"dotenv": "^16.4.5",
+		"ejs": "^3.1.9",
+		"express": "^4.19.2",
+		"express-rate-limit": "^7.4.0",
+		"express-session": "^1.18.0",
+		"module-alias": "^2.2.3",
+		"multer": "^1.4.5-lts.1",
+		"node-cache": "^5.1.2",
+		"sqlite3": "^5.1.6",
+		"ws": "^8.18.0"
+	},
+	"_moduleAliases": {
+		"image-uploader": "src/app"
+	}
+}

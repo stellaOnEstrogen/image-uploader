@@ -1,0 +1,30 @@
+name: Suggest translation
+description: Suggest a translation for the project
+title: "[TRANSLATION] "
+labels:
+  - translation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Describe the translation**
+        A clear and concise description of what the translation is.
+  
+  - type: textarea
+    id: translation
+    attributes:
+      label: "Translation"
+      description: "The translation you are suggesting"
+      placeholder: "This is a placeholder text"
+  
+  - type: input
+    id: language
+    attributes:
+      label: "Language"
+      description: "The language you are suggesting the translation for"
+  
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: "Additional context"
+      description: "Add any other context about the translation here"
