@@ -18,6 +18,7 @@ import bcrypt from 'bcrypt';
 import os from 'os';
 import rateLimit from 'express-rate-limit';
 import constants from './constants';
+import { config as dotenv } from 'dotenv';
 
 function makeUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -68,7 +69,6 @@ const uploadForImages = multer({ storage: storageForImages });
 const uploadForAvatars = multer({ storage: storageForAvatars });
 const uploadForVideos = multer({ storage: storageForVideos });
 const server = express();
-require('dotenv').config();
 
 export interface RequestWithSession extends Request {
 	session: any;
@@ -78,6 +78,12 @@ async function main(args: Arg[]) {
 	if (isFirstTimeSetup()) {
 		await firstTimeSetup();
 	}
+
+    const envPath = args.find((arg) => arg.name === 'env')?.value;
+
+    dotenv({
+        path: envPath || pJoin(__dirname, '..', '.env'),
+    });
 
 	const db = AppDB.getInstance();
 

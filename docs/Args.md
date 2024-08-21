@@ -2,6 +2,7 @@
 
 - `--port` - Port to run the server on. Default is `3000`.
 - `--host` - Host to run the server on. Default is `localhost`.
+- `--env` - The path to the `env` file. Default is `.env`.
 
 # Usage
 
