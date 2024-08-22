@@ -64,9 +64,9 @@ export function getPictureDirs(): {
 		const base = path.resolve(PIC_DIR);
 
 		const dirs = {
-			avatar: path.join(base, 'avatar'),
-			video: path.join(base, 'video'),
-			image: path.join(base, 'image'),
+			avatar: path.join(base, 'avatars'),
+			video: path.join(base, 'videos'),
+			image: path.join(base, 'images'),
 			base,
 		};
 
@@ -80,9 +80,9 @@ export function getPictureDirs(): {
 	} else {
 		const homeDir = os.homedir();
 		const dirs = {
-			avatar: path.join(homeDir, 'Pictures', 'Avatar'),
-			video: path.join(homeDir, 'Pictures', 'Video'),
-			image: path.join(homeDir, 'Pictures', 'Image'),
+			avatar: path.join(homeDir, 'Pictures', 'Avatars'),
+			video: path.join(homeDir, 'Pictures', 'Videos'),
+			image: path.join(homeDir, 'Pictures', 'Images'),
 			base: path.join(homeDir, 'Pictures'),
 		};
 
