@@ -603,7 +603,7 @@ async function main(args: Arg[]) {
 
 			try {
 				await db.statement(
-					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
+					'INSERT INTO Media (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
 					[
 						id,
 						req.file.filename,
@@ -645,7 +645,7 @@ async function main(args: Arg[]) {
 
 			try {
 				await db.statement(
-					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
+					'INSERT INTO Media (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
 					[
 						id,
 						req.file.filename,
