@@ -24,6 +24,7 @@ import constants from './constants';
 import { config as dotenv } from 'dotenv';
 import NodeCache from 'node-cache';
 import RequestWithSession from './interfaces/RequestWithSession';
+import { reminders } from './utils/reminder';
 
 const generalRateLimit = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
@@ -98,7 +99,7 @@ async function main(args: Arg[]) {
 	});
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
-		const images = await db.statement(
+		const media = await db.statement(
 			'SELECT * FROM Media ORDER BY UploadedAt DESC',
 		);
 
@@ -107,7 +108,7 @@ async function main(args: Arg[]) {
 
 		render(req, res, 'index', {
 			title: 'Home',
-			images,
+			media,
 			timeDifference,
 			deleteSuccess,
 			deletedId: deleteSuccess ? id : null,
@@ -743,6 +744,7 @@ async function main(args: Arg[]) {
 	server.listen(port, host, async () => {
 		console.log(`Server running at http://${host}:${port}`);
 		console.log(`Serving images from ${picDir.base}`);
+		reminders.start();
 		console.log('Press Ctrl+C to stop the server');
 	});
 }

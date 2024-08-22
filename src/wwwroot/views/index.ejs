@@ -61,20 +61,20 @@
 			</div>
 			<div class="album py-5">
 				<div class="container">
-					<% if (images.length === 0) { %>
+					<% if (media.length === 0) { %>
 					<div class="alert alert-danger" role="alert">
-						No images found. Please <a href="/upload">upload</a> some images.
+						No media found. Please <a href="/upload">upload</a> some media.
 					</div>
 					<% } %>
 
 					<% if (deleteSuccess) { %>
 					<div class="alert alert-warning" role="alert">
-						Image with ID "<%= deletedId %>" has been deleted.
+						Media with ID "<%= deletedId %>" has been deleted.
 					</div>
 					<% } %>
 
 					<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-						<% images.forEach(image => { %>
+						<% media.forEach(image => { %>
 						<div class="col">
 							<div class="card shadow-sm">
 								<% if (image.ContentType.includes("image")) { %>

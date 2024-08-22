@@ -51,6 +51,26 @@
 	</div>
 </header>
 
+<% if (reminders.length > 0) { %>
+<div class="container">
+	<% reminders.forEach(reminder => { %>
+	<div
+		class="alert alert-<%= reminder.type %> alert-dismissible fade show"
+		role="alert"
+	>
+		<strong><%= reminder.title %>!</strong>
+		<%= reminder.message %>
+		<button
+			type="button"
+			class="btn-close"
+			data-bs-dismiss="alert"
+			aria-label="Close"
+		></button>
+	</div>
+	<% }) %>
+</div>
+<% } %>
+
 <script>
 	const headerLinks = document.querySelectorAll('.nav-link');
 
