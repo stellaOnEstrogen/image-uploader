@@ -99,7 +99,7 @@ async function main(args: Arg[]) {
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
 		const images = await db.statement(
-			'SELECT * FROM Images ORDER BY UploadedAt DESC',
+			'SELECT * FROM Media ORDER BY UploadedAt DESC',
 		);
 
 		const deleteSuccess = req.query.deleted === 'true';
@@ -128,16 +128,16 @@ async function main(args: Arg[]) {
 		const imageId = req.params.id;
 		const raw = req.query.raw === 'true';
 
-		const media = await db.statement('SELECT * FROM Images WHERE ID = ?', [
+		const media = await db.statement('SELECT * FROM Media WHERE ID = ?', [
 			imageId,
 		]);
 
 		if (media.length === 0) {
-			return res.status(404).send('Image not found');
+			return res.status(404).send('Media not found');
 		}
 
 		if (!raw) {
-			await db.statement('UPDATE Images SET Views = Views + 1 WHERE ID = ?', [
+			await db.statement('UPDATE Media SET Views = Views + 1 WHERE ID = ?', [
 				imageId,
 			]);
 
@@ -219,7 +219,7 @@ async function main(args: Arg[]) {
 	server.get('/stats', async (req: Request, res: Response) => {
 		let totalStorage = 0;
 
-		const images = await db.statement('SELECT * FROM Images');
+		const images = await db.statement('SELECT * FROM Media');
 		const admins = await db.statement('SELECT * FROM Admins');
 
 		images.forEach((image: any) => {
@@ -339,11 +339,11 @@ async function main(args: Arg[]) {
 			}
 
 			const recentUploads = await db.statement(
-				'SELECT * FROM Images WHERE UploadedBy = ? ORDER BY UploadedAt DESC LIMIT 5',
+				'SELECT * FROM Media WHERE UploadedBy = ? ORDER BY UploadedAt DESC LIMIT 5',
 				[admin[0].Id],
 			);
 			const allUploads = await db.statement(
-				'SELECT * FROM Images WHERE UploadedBy = ?',
+				'SELECT * FROM Media WHERE UploadedBy = ?',
 				[admin[0].Id],
 			);
 
@@ -414,7 +414,6 @@ async function main(args: Arg[]) {
 					[profilePicture, bio, username, userId],
 				);
 
-				// Update session data
 				req.session.user.Username = username;
 				req.session.user.Bio = bio;
 				if (req.file) {
@@ -436,12 +435,12 @@ async function main(args: Arg[]) {
 
 		const imageId = req.params.id;
 
-		const image = await db.statement('SELECT * FROM Images WHERE ID = ?', [
+		const image = await db.statement('SELECT * FROM Media WHERE ID = ?', [
 			imageId,
 		]);
 
 		if (image.length === 0) {
-			return res.status(404).send('Image not found');
+			return res.status(404).send('Media not found');
 		}
 
 		const type = image[0].ContentType.split('/')[0];
@@ -453,11 +452,11 @@ async function main(args: Arg[]) {
 		const exists = existsSync(imagePath);
 
 		if (!exists) {
-			return res.status(404).send('Image not found');
+			return res.status(404).send('Media not found');
 		}
 
 		try {
-			await db.statement('DELETE FROM Images WHERE ID = ?', [imageId]);
+			await db.statement('DELETE FROM Media WHERE ID = ?', [imageId]);
 			unlinkSync(imagePath);
 			res.redirect('/?deleted=true&id=' + imageId);
 		} catch (error) {
@@ -514,7 +513,6 @@ async function main(args: Arg[]) {
 
 		const pMasterKey = process.env.MASTER_KEY;
 
-		// Check for missing fields
 		if (!username || !password || !masterKey) {
 			return render(req, res, 'register', {
 				title: 'Register',
@@ -523,7 +521,6 @@ async function main(args: Arg[]) {
 			});
 		}
 
-		// Validate master key
 		if (masterKey.trim() !== pMasterKey) {
 			return render(req, res, 'register', {
 				title: 'Register',
@@ -533,7 +530,6 @@ async function main(args: Arg[]) {
 		}
 
 		try {
-			// Check if the username already exists
 			const userExists = await db.statement(
 				'SELECT * FROM Admins WHERE Username = ?',
 				[username.toLowerCase().trim()],
@@ -546,21 +542,19 @@ async function main(args: Arg[]) {
 				});
 			}
 
-			// Hash the password
 			const hashedPassword = await bcrypt.hash(password, 10);
 
-			// Insert new user into the database
 			await db.statement(
-				'INSERT INTO Admins (Username, Password, ProfilePicture, Bio) VALUES (?, ?, ?, ?)',
+				'INSERT INTO Admins (Username, Password, ProfilePicture, Bio, Role) VALUES (?, ?, ?, ?, ?)',
 				[
 					username.toLowerCase().trim(),
 					hashedPassword,
 					'default.jpg',
 					`Hello, I'm ${username}!`,
+					'user',
 				],
 			);
 
-			// Redirect to login page after successful registration
 			res.redirect('/login');
 		} catch (error) {
 			console.error('Error registering user:', error);
@@ -609,7 +603,7 @@ async function main(args: Arg[]) {
 					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
 					[
 						id,
-						req.file.filename, // Keep the original file name
+						req.file.filename,
 						caption,
 						contentType,
 						0,
@@ -651,7 +645,7 @@ async function main(args: Arg[]) {
 					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
 					[
 						id,
-						req.file.filename, // Keep the original file name
+						req.file.filename,
 						caption,
 						contentType,
 						0,
@@ -679,7 +673,7 @@ async function main(args: Arg[]) {
 		});
 	});
 
-	server.get('/api/get-images', async (req: Request, res: Response) => {
+	server.get('/api/get-media', async (req: Request, res: Response) => {
 		const by = req.query.by as string;
 		const sort = req.query.sort as string;
 		const order = req.query.order as string;
@@ -692,21 +686,17 @@ async function main(args: Arg[]) {
 			});
 		}
 
-		// Validate and sanitize inputs
 		const sortValid = ['ASC', 'DESC'];
 		const orderValid = ['UploadedAt', 'Views'];
 
-		let query = 'SELECT * FROM Images WHERE UploadedBy = ?';
+		let query = 'SELECT * FROM Media WHERE UploadedBy = ?';
 		const queryParams: any[] = [by];
 
-		// Determine the order by column and direction
 		let orderByClause = '';
 		if (order && orderValid.includes(order)) {
 			if (order === 'Views') {
-				// Order by Views in descending order if 'Views' is selected
 				orderByClause = ` ORDER BY Views DESC`;
 			} else {
-				// Default sort direction
 				const sortDirection =
 					sort && sortValid.includes(sort.toUpperCase()) ?
 						sort.toUpperCase()
@@ -720,7 +710,6 @@ async function main(args: Arg[]) {
 		}
 
 		if (limit) {
-			// Ensure limit is a valid integer
 			const limitInt = parseInt(limit, 10);
 			if (isNaN(limitInt) || limitInt <= 0) {
 				return res.status(400).json({
@@ -733,7 +722,6 @@ async function main(args: Arg[]) {
 		}
 
 		try {
-			// Execute the query with parameters
 			if (postCache.has(query)) {
 				const cached = postCache.get(query);
 				return res.json(cached);
@@ -747,7 +735,7 @@ async function main(args: Arg[]) {
 			postCache.set(query, images);
 			res.json(images);
 		} catch (error) {
-			console.error('Error fetching images:', error);
+			console.error('Error fetching media:', error);
 			res.status(500).json({ error: 'Internal Server Error' });
 		}
 	});

@@ -38,7 +38,6 @@ export async function firstTimeSetup(): Promise<void> {
 		db.createDatabase()
 			.then(() => {
 				console.log('Database created successfully');
-				db.close();
 			})
 			.catch((error) => {
 				db.close();

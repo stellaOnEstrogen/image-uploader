@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS Admins (
     Password VARCHAR(255) NOT NULL,
     Bio TEXT,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ProfilePicture VARCHAR(255)
+    ProfilePicture VARCHAR(255),
+    Role VARCHAR(255) DEFAULT 'user'
 );

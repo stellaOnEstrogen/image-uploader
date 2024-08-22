@@ -10,7 +10,7 @@ const constants = {
 	/**
 	 * The name of the app.
 	 */
-	APP_NAME: 'Image Uploader',
+	APP_NAME: 'Media Uploader',
 	/**
 	 * The version of the app.
 	 */
@@ -54,13 +54,13 @@ const constants = {
 		},
 		{
 			method: 'GET',
-			route: '/api/get-images',
+			route: '/api/get-media',
 		},
 	],
 	/**
 	 * File Directory
 	 */
-	FILE_DIRECTORY: null,
+	FILE_DIRECTORY: process.env.FILE_DIRECTORY || null,
 };
 
 export default constants;
