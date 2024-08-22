@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import constants from '../constants';
-import { RequestWithSession } from '../app';
+import RequestWithSession from '../interfaces/RequestWithSession';
 
 interface Options {
 	title: string;

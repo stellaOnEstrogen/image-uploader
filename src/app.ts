@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 
 import { ArgParser, Arg } from './classes/ArgParser';
-import {
-	firstTimeSetup,
-	isFirstTimeSetup,
-	getPictureDirs,
-} from './utils/system';
+import { firstTimeSetup, isFirstTimeSetup } from './utils/system';
 import express, { Request, Response } from 'express';
 import { join as pJoin } from 'node:path';
 import { render } from './wwwroot';
 import session from 'express-session';
 import AppDB from './classes/AppDB';
 import { createReadStream, existsSync, statSync, unlinkSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import {
+	generateId,
+	timeDifference,
+	picDir,
+	storageForAvatars,
+	storageForImages,
+	storageForVideos,
+} from './utils/fileUtils';
 import multer from 'multer';
 import bcrypt from 'bcrypt';
 import os from 'os';
@@ -20,42 +23,7 @@ import rateLimit from 'express-rate-limit';
 import constants from './constants';
 import { config as dotenv } from 'dotenv';
 import NodeCache from 'node-cache';
-
-function makeUUID() {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		const r = (Math.random() * 16) | 0;
-		const v = c === 'x' ? r : (r & 0x3) | 0x8;
-		return v.toString(16);
-	});
-}
-
-const picDir = getPictureDirs();
-const storageForImages = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, picDir.image);
-	},
-	filename: (req: Request, file, cb) => {
-		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-	},
-});
-
-const storageForAvatars = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, picDir.avatar);
-	},
-	filename: (req: Request, file, cb) => {
-		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-	},
-});
-
-const storageForVideos = multer.diskStorage({
-	destination: (req, file, cb) => {
-		cb(null, picDir.video);
-	},
-	filename: (req: Request, file, cb) => {
-		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-	},
-});
+import RequestWithSession from './interfaces/RequestWithSession';
 
 const generalRateLimit = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
@@ -74,10 +42,6 @@ const postCache = new NodeCache({
 	// 10 minutes
 	stdTTL: 600,
 });
-
-export interface RequestWithSession extends Request {
-	session: any;
-}
 
 async function main(args: Arg[]) {
 	if (isFirstTimeSetup()) {
@@ -109,7 +73,6 @@ async function main(args: Arg[]) {
 	server.use(express.static(pJoin(__dirname, 'wwwroot', 'public')));
 	server.set('view engine', 'ejs');
 	server.set('views', pJoin(__dirname, 'wwwroot', 'views'));
-	// Set trust proxy to true to get the client's IP address
 	server.set('trust proxy', true);
 	server.use(
 		session({
@@ -117,7 +80,7 @@ async function main(args: Arg[]) {
 			resave: false,
 			saveUninitialized: true,
 			cookie: {
-				secure: process.env.NODE_ENV === 'production',
+				secure: process.env.NODE_ENV !== 'development',
 				maxAge: 1000 * 60 * 60 * 24, // 24 hours
 			},
 		}),
@@ -135,7 +98,6 @@ async function main(args: Arg[]) {
 	});
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
-		// Sort by most recent by default
 		const images = await db.statement(
 			'SELECT * FROM Images ORDER BY UploadedAt DESC',
 		);
@@ -166,7 +128,6 @@ async function main(args: Arg[]) {
 		const imageId = req.params.id;
 		const raw = req.query.raw === 'true';
 
-		// Fetch the image from the database
 		const media = await db.statement('SELECT * FROM Images WHERE ID = ?', [
 			imageId,
 		]);
@@ -176,7 +137,6 @@ async function main(args: Arg[]) {
 		}
 
 		if (!raw) {
-			// Update the view count
 			await db.statement('UPDATE Images SET Views = Views + 1 WHERE ID = ?', [
 				imageId,
 			]);
@@ -189,8 +149,6 @@ async function main(args: Arg[]) {
 			if (uploadedBy.length === 0) {
 				return res.status(404).send('Uploader not found');
 			}
-
-			// Render the image view page
 			return render(req, res, 'view', {
 				title: `${media[0].Caption}`,
 				image: media[0],
@@ -729,11 +687,9 @@ async function main(args: Arg[]) {
 		const type = req.query.type as string;
 
 		if (!by) {
-			return res
-				.status(400)
-				.json({
-					error: "Missing 'by' query parameter. This must be a user ID.",
-				});
+			return res.status(400).json({
+				error: "Missing 'by' query parameter. This must be a user ID.",
+			});
 		}
 
 		// Validate and sanitize inputs
@@ -767,12 +723,10 @@ async function main(args: Arg[]) {
 			// Ensure limit is a valid integer
 			const limitInt = parseInt(limit, 10);
 			if (isNaN(limitInt) || limitInt <= 0) {
-				return res
-					.status(400)
-					.json({
-						error:
-							"Invalid 'limit' query parameter. It must be a positive integer.",
-					});
+				return res.status(400).json({
+					error:
+						"Invalid 'limit' query parameter. It must be a positive integer.",
+				});
 			}
 			query += ` LIMIT ?`;
 			queryParams.push(limitInt);
@@ -803,23 +757,6 @@ async function main(args: Arg[]) {
 		console.log(`Serving images from ${picDir.base}`);
 		console.log('Press Ctrl+C to stop the server');
 	});
-}
-
-function generateId() {
-	return [...Array(8)]
-		.map(() => Math.floor(Math.random() * 16).toString(16))
-		.join('');
-}
-
-function timeDifference(date: Date) {
-	const now = new Date();
-	const diff = now.getTime() - date.getTime();
-	const minutes = Math.floor(diff / 60000);
-	if (minutes < 60) return `${minutes} minute(s) ago`;
-	const hours = Math.floor(minutes / 60);
-	if (hours < 24) return `${hours} hour(s) ago`;
-	const days = Math.floor(hours / 24);
-	return `${days} day(s) ago`;
 }
 
 const argParser = new ArgParser(process.argv.slice(2));
