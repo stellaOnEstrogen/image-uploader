@@ -57,10 +57,6 @@ const constants = {
 			route: '/api/get-media',
 		},
 	],
-	/**
-	 * File Directory
-	 */
-	FILE_DIRECTORY: process.env.FILE_DIRECTORY || null,
 };
 
 export default constants;
