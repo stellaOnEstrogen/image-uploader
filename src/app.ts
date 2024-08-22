@@ -30,14 +30,6 @@ import { makeBot, checkIfBotExists, makeBotAvatar } from './utils/botAccounts';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const generalRateLimit = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100,
-	message: 'Too many requests from this IP, please try again later.',
-	//@ts-ignore
-	keyGenerator: (req, res) => req.ip,
-});
-
 const uploadForImages = multer({ storage: storageForImages });
 const uploadForAvatars = multer({ storage: storageForAvatars });
 const uploadForVideos = multer({ storage: storageForVideos });
@@ -87,17 +79,6 @@ async function main(args: Arg[]) {
 			},
 		}),
 	);
-	server.use((req, res, next) => {
-		const noRateLimit = constants.NO_RATE_LIMIT_ROUTES.find((route) => {
-			return route.method === req.method && route.route === req.path;
-		});
-
-		if (noRateLimit) {
-			return next();
-		}
-
-		generalRateLimit(req, res, next);
-	});
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
 		const media = await db.statement(
