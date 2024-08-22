@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>User Profile - <%= user.Username %></title>
+		<title>User Profile - <%= user.Username.replace(/_/g, ' ') %></title>
 		<!-- Icon -->
 		<link
 			rel="icon"
@@ -44,7 +44,7 @@
 			}
 		</style>
 
-		<meta property="og:title" content="User Profile - <%= user.Username %>" />
+		<meta property="og:title" content="User Profile - <%= user.Username.replace(/_/g, ' ') %>" />
 		<meta property="og:url" content="<%= link %>" />
 		<meta
 			property="og:site_name"
@@ -56,7 +56,7 @@
 		<meta property="twitter:creator" content="@x.com/stellerDev" />
 		<meta
 			property="twitter:title"
-			content="User Profile - <%= user.Username %>"
+			content="User Profile - <%= user.Username.replace(/_/g, ' ') %>"
 		/>
 		<meta property="twitter:description" content="<%= user.Bio %>" />
 		<meta
