@@ -1,13 +1,13 @@
 ## Endpoint
 
-`GET /api/get-images`
+`GET /api/get-media`
 
 ## Description
 
-This endpoint retrieves a list of images from the database, filtered and sorted based on the provided query parameters.
+This endpoint retrieves a list of media from the database, filtered and sorted based on the provided query parameters.
 
 ## Query Parameters
-- **by** (string) (**Required**): The user ID of the person who uploaded the images.
+- **by** (string) (**Required**): The user ID of the person who uploaded the media.
 
 - **sort** (string) (Optional): The direction to sort the results. Accepted values are:
     - `ASC`: Ascending order (default).
@@ -24,14 +24,14 @@ This endpoint retrieves a list of images from the database, filtered and sorted 
 ## Example Request
 
 ```http
-GET /api/get-images?by=12345&sort=DESC&order=Views&limit=10&type=videos
+GET /api/get-media?by=12345&sort=DESC&order=Views&limit=10&type=videos
 ```
 
 ## Responses
 
 ### Success (200 OK)
 
-On a successful request, the server will return a JSON array of images.
+On a successful request, the server will return a JSON array of media.
 
 ```json
 [
