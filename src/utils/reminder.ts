@@ -4,7 +4,7 @@ import IReminders from '../interfaces/Reminders';
 
 export const eventEmitter = new EventEmitter();
 
-export const list: IReminders[] = [
+const list: IReminders[] = [
 	{
 		slug: 'update-master-key',
 		title: 'Update the master key',

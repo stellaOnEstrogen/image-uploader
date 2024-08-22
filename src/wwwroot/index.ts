@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import constants from '../constants';
 import RequestWithSession from '../interfaces/RequestWithSession';
-import { eventEmitter, list } from '../utils/reminder';
+import { eventEmitter } from '../utils/reminder';
 
 interface Options {
 	title: string;
 	[key: string]: any;
 }
 
-let reminders: any[] = [...list];
+let reminders: any[] = [];
 
 eventEmitter.on('reminder', (reminder) => {
 	reminders.push(reminder);
