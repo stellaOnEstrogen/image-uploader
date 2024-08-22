@@ -4,7 +4,7 @@ import os from 'node:os';
 import constants from '../constants';
 import AppDB from '../classes/AppDB';
 
-const PIC_DIR: string | null = process.env.FILE_DIRECTORY || null;
+const PIC_DIR: string | null = readDirFile();
 
 export function getAppDataDir(): string {
 	let appDataDir = '';
@@ -25,12 +25,36 @@ export function getAppDataDir(): string {
 	return appDataDir;
 }
 
+function readDirFile() {
+	const dir = getAppDataDir();
+
+	const LOOKUP = path.join(dir, 'path.txt');
+
+	if (fs.existsSync(LOOKUP)) {
+		const data = fs.readFileSync(LOOKUP, 'utf-8');
+		
+		const lines = data.split('\n');
+
+		if (lines.length > 0) {
+			return lines[0];
+		} else {
+			return null;
+		}
+	} else {
+		return null;
+	}
+}
+
 export async function firstTimeSetup(): Promise<void> {
 	try {
 		const appDataDir = getAppDataDir();
 
 		if (!fs.existsSync(appDataDir)) {
 			fs.mkdirSync(appDataDir, { recursive: true });
+		}
+
+		if (!fs.existsSync(path.join(appDataDir, 'path.txt'))) {
+			fs.writeFileSync(path.join(appDataDir, 'path.txt'), '');
 		}
 
 		const db = AppDB.getInstance();

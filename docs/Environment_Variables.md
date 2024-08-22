@@ -40,21 +40,3 @@ DEFAULT_BOT_PASSWORD=your_default_bot_password_here
 ```
 
 Make sure to replace `your_default_bot_password_here` with your actual default bot password.
-
-## `FILE_DIRECTORY`
-
-The `FILE_DIRECTORY` environment variable is used to set the directory where files uploaded by users will be stored. By default, the files are stored in your `Pictures` directory. You can change the directory by setting the `FILE_DIRECTORY` environment variable.
-
-To set the `FILE_DIRECTORY` environment variable, you can use the following command:
-
-```bash
-export FILE_DIRECTORY=/path/to/your/directory
-```
-
-You can also set the `FILE_DIRECTORY` environment variable in a `.env` file in the root directory of the project. The `.env` file should look like this:
-
-```bash
-FILE_DIRECTORY=/path/to/your/directory
-```
-
-Make sure to replace `/path/to/your/directory` with the actual path to your directory.
