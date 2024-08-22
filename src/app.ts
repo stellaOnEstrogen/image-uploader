@@ -19,6 +19,7 @@ import os from 'os';
 import rateLimit from 'express-rate-limit';
 import constants from './constants';
 import { config as dotenv } from 'dotenv';
+import NodeCache from 'node-cache';
 
 function makeUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -69,6 +70,11 @@ const uploadForImages = multer({ storage: storageForImages });
 const uploadForAvatars = multer({ storage: storageForAvatars });
 const uploadForVideos = multer({ storage: storageForVideos });
 const server = express();
+
+const postCache = new NodeCache({
+    // 10 minutes
+    stdTTL: 600,
+});
 
 export interface RequestWithSession extends Request {
 	session: any;
@@ -717,7 +723,13 @@ async function main(args: Arg[]) {
     
         try {
             // Execute the query with parameters
+            if (postCache.has(query)) {
+                const cached = postCache.get(query);
+                return res.json(cached);
+            }
+
             const images = await db.statement(query, queryParams);
+            postCache.set(query, images);
             res.json(images);
         } catch (error) {
             console.error('Error fetching images:', error);
