@@ -40,6 +40,20 @@ image-uploader --port 5017
 The Website and API will be available at `http://localhost:5017/`.
 
 
+## Features
+
+- Upload images to the server
+- View all images uploaded to the server
+- Share images with a link
+- User authentication
+
+## Todos    
+
+- [ ] Allow users to delete images
+- [ ] Allow users to edit images
+- [ ] Allow users to search for images
+- [ ] Allow users to upload with [sharex](https://getsharex.com/)
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
