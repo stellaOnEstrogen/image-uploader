@@ -136,7 +136,8 @@ async function main(args: Arg[]) {
     });
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
-		const images = await db.statement('SELECT * FROM Images');
+        // Sort by most recent by default
+		const images = await db.statement('SELECT * FROM Images ORDER BY UploadedAt DESC');
 
 		const deleteSuccess = req.query.deleted === 'true';
 		const id = req.query.id;
@@ -732,7 +733,7 @@ async function main(args: Arg[]) {
             }
 
             let images = await db.statement(query, queryParams);
-            
+
             query += ` AND ContentType LIKE ?`;
             queryParams.push(`${type === 'videos' ? 'video' : 'image'}%`);
 
