@@ -682,6 +682,7 @@ async function main(args: Arg[]) {
         const sort = req.query.sort as string;
         const order = req.query.order as string;
         const limit = req.query.limit as string;
+        const type = req.query.type as string;
     
         if (!by) {
             return res.status(400).json({ error: "Missing 'by' query parameter. This must be a user ID." });
@@ -720,6 +721,8 @@ async function main(args: Arg[]) {
             query += ` LIMIT ?`;
             queryParams.push(limitInt);
         }
+
+        
     
         try {
             // Execute the query with parameters
@@ -728,7 +731,11 @@ async function main(args: Arg[]) {
                 return res.json(cached);
             }
 
-            const images = await db.statement(query, queryParams);
+            let images = await db.statement(query, queryParams);
+            
+            query += ` AND ContentType LIKE ?`;
+            queryParams.push(`${type === 'videos' ? 'video' : 'image'}%`);
+
             postCache.set(query, images);
             res.json(images);
         } catch (error) {
