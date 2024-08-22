@@ -3,7 +3,13 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>User Profile - <!= user.Username !></title>
+		<title>User Profile - <%= user.Username %></title>
+		<!-- Icon -->
+		<link
+			rel="icon"
+			href="/avatars/<%= user.ProfilePicture %>"
+			type="image/<%= avatarType %>"
+		/>
 
 		<!-- Bootstrap CSS -->
 		<link
@@ -68,8 +74,13 @@
 					alt="Profile Picture"
 					class="profile-picture"
 				/>
-				<h2><%= user.Username %></h2>
-				<small class="text-muted">UserID: <%= user.Id %></small>
+				<h2>
+					<%= user.Username.replace(/_/g, ' ') %>
+					<% if (user.IsBot) { %>
+					<img src="/assets/images/bot.png" alt="Bot" width="48" height="48" />
+					<% } %>
+				</h2>
+				<small class="text-muted">UID: <%= user.Id %></small>
 				<p><%= user.Bio %></p>
 			</div>
 

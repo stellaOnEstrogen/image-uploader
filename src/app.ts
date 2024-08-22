@@ -357,6 +357,7 @@ async function main(args: Arg[]) {
 				recentUploads,
 				timeDifference,
 				allUploads,
+				avatarType: admin[0].ProfilePicture.split('.').pop(),
 			});
 		},
 	);
