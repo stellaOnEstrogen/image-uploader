@@ -15,6 +15,7 @@ import {
 	storageForAvatars,
 	storageForImages,
 	storageForVideos,
+	makeUUID,
 } from './utils/fileUtils';
 import multer from 'multer';
 import bcrypt from 'bcrypt';
@@ -25,6 +26,7 @@ import { config as dotenv } from 'dotenv';
 import NodeCache from 'node-cache';
 import RequestWithSession from './interfaces/RequestWithSession';
 import { reminders } from './utils/reminder';
+import { makeBot, checkIfBotExists, makeBotAvatar } from './utils/botAccounts';
 
 const generalRateLimit = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
@@ -742,6 +744,42 @@ async function main(args: Arg[]) {
 	});
 
 	server.listen(port, host, async () => {
+		const botExists = await checkIfBotExists('Futaba_Anzu');
+		if (!botExists) {
+			if (!process.env.DEFAULT_BOT_PASSWORD) {
+				console.error(
+					'No default bot password provided. Please provide a password for the default bot account in the environment variables.',
+				);
+				process.exit(1);
+			}
+
+			const defaultAvatarPath = pJoin(
+				'src',
+				'wwwroot',
+				'public',
+				'assets',
+				'bot-avatars',
+				'futaba_anzu.jpg',
+			);
+
+			if (!existsSync(defaultAvatarPath)) {
+				console.error('Default bot avatar not found.');
+				process.exit(1);
+			}
+
+			const uuid = makeUUID();
+
+			console.log('Creating bot account to help with utility tasks.');
+
+			await makeBot({
+				username: 'Futaba_Anzu',
+				password: process.env.DEFAULT_BOT_PASSWORD,
+				bio: 'Hello! I am Futaba Anzu, a bot account.',
+				avatar: uuid,
+			});
+
+			await makeBotAvatar('Futaba_Anzu', uuid, defaultAvatarPath);
+		}
 		console.log(`Server running at http://${host}:${port}`);
 		console.log(`Serving images from ${picDir.base}`);
 		reminders.start();
