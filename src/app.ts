@@ -166,9 +166,9 @@ async function main(args: Arg[]) {
         const raw = req.query.raw === 'true';
     
         // Fetch the image from the database
-        const image = await db.statement('SELECT * FROM Images WHERE ID = ?', [imageId]);
+        const media = await db.statement('SELECT * FROM Images WHERE ID = ?', [imageId]);
     
-        if (image.length === 0) {
+        if (media.length === 0) {
             return res.status(404).send('Image not found');
         }
     
@@ -176,7 +176,7 @@ async function main(args: Arg[]) {
             // Update the view count
             await db.statement('UPDATE Images SET Views = Views + 1 WHERE ID = ?', [imageId]);
     
-            const uploadedBy = await db.statement('SELECT * FROM Admins WHERE ID = ?', [image[0].UploadedBy]);
+            const uploadedBy = await db.statement('SELECT * FROM Admins WHERE ID = ?', [media[0].UploadedBy]);
     
             if (uploadedBy.length === 0) {
                 return res.status(404).send('Uploader not found');
@@ -184,24 +184,22 @@ async function main(args: Arg[]) {
     
             // Render the image view page
             return render(req, res, 'view', {
-                title: `View Image ${image[0].Caption}`,
-                image: image[0],
+                title: `${media[0].Caption}`,
+                image: media[0],
                 link: `https://${req.get('host')}/view/${imageId}?raw=true`,
-                canDelete: !!req.session.user && req.session.user.Id === image[0].UploadedBy,
+                canDelete: !!req.session.user && req.session.user.Id === media[0].UploadedBy,
                 uploadedBy: uploadedBy[0],
             });
         } else {
-            const type = image[0].ContentType.split('/')[0];
-            const imagePath = pJoin(picDir[type as keyof typeof picDir], image[0].FileName);
+            const type = media[0].ContentType.split('/')[0];
+            const mediaPath = pJoin(picDir[type as keyof typeof picDir], media[0].FileName);
     
-            const exists = existsSync(imagePath);
-    
-            if (!exists) {
-                return res.status(404).send('Image not found');
+            if (!existsSync(mediaPath)) {
+                return res.status(404).send('Media not found');
             }
     
             try {
-                const stats = statSync(imagePath);
+                const stats = statSync(mediaPath);
                 const range = req.headers.range;
     
                 if (range) {
@@ -216,26 +214,26 @@ async function main(args: Arg[]) {
                         'Content-Range': `bytes ${chunkStart}-${chunkEnd}/${fileSize}`,
                         'Accept-Ranges': 'bytes',
                         'Content-Length': contentLength,
-                        'Content-Type': image[0].ContentType,
+                        'Content-Type': media[0].ContentType,
                     });
     
-                    const fileData = await readFile(imagePath);
-                    res.end(fileData.slice(chunkStart, chunkEnd + 1));
+                    const stream = createReadStream(mediaPath, { start: chunkStart, end: chunkEnd });
+                    stream.pipe(res);
                 } else {
                     res.writeHead(200, {
                         'Content-Length': stats.size,
-                        'Content-Type': image[0].ContentType,
+                        'Content-Type': media[0].ContentType,
                     });
     
-                    const fileData = await readFile(imagePath);
-                    res.end(fileData);
+                    const stream = createReadStream(mediaPath);
+                    stream.pipe(res);
                 }
             } catch (error) {
                 if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                    return res.status(404).send('Image not found');
+                    return res.status(404).send('Media not found');
                 }
     
-                console.error('Error serving image:', error);
+                console.error('Error serving media:', error);
                 return res.status(500).send('Internal Server Error');
             }
         }
