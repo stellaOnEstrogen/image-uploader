@@ -215,6 +215,7 @@ async function main(args: Arg[]) {
                         'Accept-Ranges': 'bytes',
                         'Content-Length': contentLength,
                         'Content-Type': media[0].ContentType,
+                        'Content-Disposition': `inline; filename="${media[0].FileName}.${media[0].ContentType.split("/")[1]}"`,
                     });
     
                     const stream = createReadStream(mediaPath, { start: chunkStart, end: chunkEnd });
