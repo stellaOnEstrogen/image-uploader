@@ -22,123 +22,142 @@
 		></script>
 	</head>
 	<body>
-	<%- include('_partials/header') %>
+		<%- include('_partials/header') %>
 		<main>
-            <div class="px-4 pt-5 my-5 text-center">
-                <h1 class="display-4 fw-bold text-body-emphasis">Welcome to the Image Uploader</h1>
-                <div class="col-lg-6 mx-auto">
-                  <p class="lead mb-4">This is an <a href="https://github.com/stellaOnEstrogen/image-uploader" class="text-body-emphasis">open-source project</a> that allows you to upload images and videos to a server, However, you must have the master key to register.</p>
-                  <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-                    <a href="/register" class="btn btn-primary btn-lg px-4 me-sm-3">Register</a>
-                    <a href="/login" class="btn btn-outline-secondary btn-lg px-4">Login</a>
-                  </div>
-                </div>
-                <div class="overflow-hidden" style="max-height: 30vh;">
-                  <div class="container px-5">
-                    <img src="https://contrib.rocks/image?repo=stellaOnEstrogen/image-uploader" class="img-fluid rounded-3 mb-4" alt="Contributors" loading="lazy" />
-                  </div>
-                </div>
-              </div>
+			<div class="px-4 pt-5 my-5 text-center">
+				<h1 class="display-4 fw-bold text-body-emphasis">
+					Welcome to the Image Uploader
+				</h1>
+				<div class="col-lg-6 mx-auto">
+					<p class="lead mb-4">
+						This is an
+						<a
+							href="https://github.com/stellaOnEstrogen/image-uploader"
+							class="text-body-emphasis"
+							>open-source project</a
+						>
+						that allows you to upload images and videos to a server, However,
+						you must have the master key to register.
+					</p>
+					<div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+						<a href="/register" class="btn btn-primary btn-lg px-4 me-sm-3"
+							>Register</a
+						>
+						<a href="/login" class="btn btn-outline-secondary btn-lg px-4"
+							>Login</a
+						>
+					</div>
+				</div>
+				<div class="overflow-hidden" style="max-height: 30vh">
+					<div class="container px-5">
+						<img
+							src="https://contrib.rocks/image?repo=stellaOnEstrogen/image-uploader"
+							class="img-fluid rounded-3 mb-4"
+							alt="Contributors"
+							loading="lazy"
+						/>
+					</div>
+				</div>
+			</div>
 			<div class="album py-5">
 				<div class="container">
-                    <% if (images.length === 0) { %>
-                        <div class="alert alert-danger" role="alert">
-                            No images found. Please <a href="/upload">upload</a> some images.
-                        </div>
-                    <% } %>
+					<% if (images.length === 0) { %>
+					<div class="alert alert-danger" role="alert">
+						No images found. Please <a href="/upload">upload</a> some images.
+					</div>
+					<% } %>
 
-                    <% if (deleteSuccess) { %>
-                        <div class="alert alert-warning" role="alert">
-                            Image with ID "<%= deletedId %>" has been deleted.
-                        </div>
-                    <% } %>
+					<% if (deleteSuccess) { %>
+					<div class="alert alert-warning" role="alert">
+						Image with ID "<%= deletedId %>" has been deleted.
+					</div>
+					<% } %>
 
 					<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-						
-							<% images.forEach(image => { %>
-                                <div class="col">
-                                <div class="card shadow-sm">
-                                    <% if (image.ContentType.includes("image")) { %>
-                                        <img 
-                                            src="/view/<%= image.Id %>?raw=true"
-                                            loading="lazy"
-                                            class="bd-placeholder-img card-img-top"
-                                            width="100%"
-                                            height="100%"
-                                        />
-                                    <% } else { %>
-                                        <video 
-                                            src="/view/<%= image.Id %>?raw=true"
-                                            class="bd-placeholder-img card-img-top card-video"
-                                            width="100%"
-                                            height="100%"
-                                        ></video>
-                                    <% } %>
-                                    <div class="card-body">
-                                        <p class="card-text">
-                                            <%= image.Caption %>
-                                        </p>
-                                        <div
-                                            class="d-flex justify-content-between align-items-center"
-                                        >
-                                            <div class="btn-group">
-                                                <a
-                                                    href="/view/<%= image.Id %>"
-                                                    class="btn btn-sm btn-outline-secondary"
-                                                >
-                                                    View
-                                            </a>
-                                            </div>
-                                            <small class="text-body-secondary"><%= new Date(image.UploadedAt).toLocaleDateString() %> (<%= timeDifference(new Date(image.UploadedAt)) %>)</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <% }) %>
+						<% images.forEach(image => { %>
+						<div class="col">
+							<div class="card shadow-sm">
+								<% if (image.ContentType.includes("image")) { %>
+								<img
+									src="/view/<%= image.Id %>?raw=true"
+									loading="lazy"
+									class="bd-placeholder-img card-img-top"
+									width="100%"
+									height="100%"
+								/>
+								<% } else { %>
+								<video
+									src="/view/<%= image.Id %>?raw=true"
+									class="bd-placeholder-img card-img-top card-video"
+									width="100%"
+									height="100%"
+								></video>
+								<% } %>
+								<div class="card-body">
+									<p class="card-text"><%= image.Caption %></p>
+									<div
+										class="d-flex justify-content-between align-items-center"
+									>
+										<div class="btn-group">
+											<a
+												href="/view/<%= image.Id %>"
+												class="btn btn-sm btn-outline-secondary"
+											>
+												View
+											</a>
+										</div>
+										<small class="text-body-secondary"
+											><%= new Date(image.UploadedAt).toLocaleDateString() %>
+											(<%= timeDifference(new Date(image.UploadedAt)) %>)</small
+										>
+									</div>
+								</div>
+							</div>
+						</div>
+						<% }) %>
 					</div>
 				</div>
 			</div>
 		</main>
 
-        <script>
-            // Clean up the URL
-            const url = window.location.href;
-            const cleanUrl = url.split("?")[0];
-            window.history.replaceState({}, document.title, cleanUrl);
-          
-            const cardVideos = document.querySelectorAll(".card-video");
-          
-            cardVideos.forEach(video => {
-              let lastCurrentTime = 0;
-              let isPlaying = false;
-          
-              video.addEventListener("mouseover", () => {
-                if (isPlaying) return; // Avoid multiple hover events
-          
-                lastCurrentTime = video.currentTime;
-                video.currentTime = 0; // Start from the beginning
-                video.play();
-                video.muted = true;
-                isPlaying = true;
-          
-                // Stop previewing after 4 seconds
-                setTimeout(() => {
-                  video.pause();
-                  video.currentTime = lastCurrentTime; // Resume where it was
-                  isPlaying = false;
-                }, 4000);
-              });
-          
-              // Ensure the video is stopped if the mouse leaves
-              video.addEventListener("mouseout", () => {
-                if (isPlaying) {
-                  video.pause();
-                  video.currentTime = lastCurrentTime;
-                  isPlaying = false;
-                }
-              });
-            });
-          </script>
-          
+		<script>
+			// Clean up the URL
+			const url = window.location.href;
+			const cleanUrl = url.split('?')[0];
+			window.history.replaceState({}, document.title, cleanUrl);
+
+			const cardVideos = document.querySelectorAll('.card-video');
+
+			cardVideos.forEach((video) => {
+				let lastCurrentTime = 0;
+				let isPlaying = false;
+
+				video.addEventListener('mouseover', () => {
+					if (isPlaying) return; // Avoid multiple hover events
+
+					lastCurrentTime = video.currentTime;
+					video.currentTime = 0; // Start from the beginning
+					video.play();
+					video.muted = true;
+					isPlaying = true;
+
+					// Stop previewing after 4 seconds
+					setTimeout(() => {
+						video.pause();
+						video.currentTime = lastCurrentTime; // Resume where it was
+						isPlaying = false;
+					}, 4000);
+				});
+
+				// Ensure the video is stopped if the mouse leaves
+				video.addEventListener('mouseout', () => {
+					if (isPlaying) {
+						video.pause();
+						video.currentTime = lastCurrentTime;
+						isPlaying = false;
+					}
+				});
+			});
+		</script>
 	</body>
 </html>

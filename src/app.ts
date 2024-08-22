@@ -22,48 +22,47 @@ import { config as dotenv } from 'dotenv';
 import NodeCache from 'node-cache';
 
 function makeUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		const r = (Math.random() * 16) | 0;
+		const v = c === 'x' ? r : (r & 0x3) | 0x8;
+		return v.toString(16);
+	});
 }
 
 const picDir = getPictureDirs();
 const storageForImages = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, picDir.image);
-    },
-    filename: (req: Request, file, cb) => {
-        
-        cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-    }
+	destination: (req, file, cb) => {
+		cb(null, picDir.image);
+	},
+	filename: (req: Request, file, cb) => {
+		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
+	},
 });
 
 const storageForAvatars = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, picDir.avatar);
-    },
-    filename: (req: Request, file, cb) => {
-        cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-    }
+	destination: (req, file, cb) => {
+		cb(null, picDir.avatar);
+	},
+	filename: (req: Request, file, cb) => {
+		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
+	},
 });
 
 const storageForVideos = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, picDir.video);
-    },
-    filename: (req: Request, file, cb) => {
-        cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
-    }
+	destination: (req, file, cb) => {
+		cb(null, picDir.video);
+	},
+	filename: (req: Request, file, cb) => {
+		cb(null, `${makeUUID()}.${file.originalname.split('.').pop()}`); // Use the original file name
+	},
 });
 
 const generalRateLimit = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100,
-    message: 'Too many requests from this IP, please try again later.',
-    //@ts-ignore
-    keyGenerator: (req, res) => req.ip,
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	max: 100,
+	message: 'Too many requests from this IP, please try again later.',
+	//@ts-ignore
+	keyGenerator: (req, res) => req.ip,
 });
 
 const uploadForImages = multer({ storage: storageForImages });
@@ -72,8 +71,8 @@ const uploadForVideos = multer({ storage: storageForVideos });
 const server = express();
 
 const postCache = new NodeCache({
-    // 10 minutes
-    stdTTL: 600,
+	// 10 minutes
+	stdTTL: 600,
 });
 
 export interface RequestWithSession extends Request {
@@ -85,11 +84,11 @@ async function main(args: Arg[]) {
 		await firstTimeSetup();
 	}
 
-    const envPath = args.find((arg) => arg.name === 'env')?.value;
+	const envPath = args.find((arg) => arg.name === 'env')?.value;
 
-    dotenv({
-        path: envPath || pJoin(__dirname, '..', '.env'),
-    });
+	dotenv({
+		path: envPath || pJoin(__dirname, '..', '.env'),
+	});
 
 	const db = AppDB.getInstance();
 
@@ -110,8 +109,8 @@ async function main(args: Arg[]) {
 	server.use(express.static(pJoin(__dirname, 'wwwroot', 'public')));
 	server.set('view engine', 'ejs');
 	server.set('views', pJoin(__dirname, 'wwwroot', 'views'));
-    // Set trust proxy to true to get the client's IP address
-    server.set('trust proxy', true);
+	// Set trust proxy to true to get the client's IP address
+	server.set('trust proxy', true);
 	server.use(
 		session({
 			secret: 'i-love-catgirls',
@@ -123,21 +122,23 @@ async function main(args: Arg[]) {
 			},
 		}),
 	);
-    server.use((req, res, next) => {
-        const noRateLimit = constants.NO_RATE_LIMIT_ROUTES.find((route) => {
-            return route.method === req.method && route.route === req.path;
-        });
+	server.use((req, res, next) => {
+		const noRateLimit = constants.NO_RATE_LIMIT_ROUTES.find((route) => {
+			return route.method === req.method && route.route === req.path;
+		});
 
-        if (noRateLimit) {
-            return next();
-        }
+		if (noRateLimit) {
+			return next();
+		}
 
-        generalRateLimit(req, res, next);
-    });
+		generalRateLimit(req, res, next);
+	});
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
-        // Sort by most recent by default
-		const images = await db.statement('SELECT * FROM Images ORDER BY UploadedAt DESC');
+		// Sort by most recent by default
+		const images = await db.statement(
+			'SELECT * FROM Images ORDER BY UploadedAt DESC',
+		);
 
 		const deleteSuccess = req.query.deleted === 'true';
 		const id = req.query.id;
@@ -162,276 +163,313 @@ async function main(args: Arg[]) {
 	});
 
 	server.get('/view/:id', async (req: RequestWithSession, res: Response) => {
-        const imageId = req.params.id;
-        const raw = req.query.raw === 'true';
-    
-        // Fetch the image from the database
-        const media = await db.statement('SELECT * FROM Images WHERE ID = ?', [imageId]);
-    
-        if (media.length === 0) {
-            return res.status(404).send('Image not found');
-        }
-    
-        if (!raw) {
-            // Update the view count
-            await db.statement('UPDATE Images SET Views = Views + 1 WHERE ID = ?', [imageId]);
-    
-            const uploadedBy = await db.statement('SELECT * FROM Admins WHERE ID = ?', [media[0].UploadedBy]);
-    
-            if (uploadedBy.length === 0) {
-                return res.status(404).send('Uploader not found');
-            }
-    
-            // Render the image view page
-            return render(req, res, 'view', {
-                title: `${media[0].Caption}`,
-                image: media[0],
-                link: `https://${req.get('host')}/view/${imageId}?raw=true`,
-                canDelete: !!req.session.user && req.session.user.Id === media[0].UploadedBy,
-                uploadedBy: uploadedBy[0],
-            });
-        } else {
-            const type = media[0].ContentType.split('/')[0];
-            const mediaPath = pJoin(picDir[type as keyof typeof picDir], media[0].FileName);
-    
-            if (!existsSync(mediaPath)) {
-                return res.status(404).send('Media not found');
-            }
-    
-            try {
-                const stats = statSync(mediaPath);
-                const range = req.headers.range;
-    
-                if (range) {
-                    const [start, end] = range.replace(/bytes=/, "").split("-").map(Number);
-                    const fileSize = stats.size;
-                    const chunkStart = Math.max(start, 0);
-                    const chunkEnd = Math.min(end || fileSize - 1, fileSize - 1);
-    
-                    const contentLength = chunkEnd - chunkStart + 1;
-    
-                    res.writeHead(206, {
-                        'Content-Range': `bytes ${chunkStart}-${chunkEnd}/${fileSize}`,
-                        'Accept-Ranges': 'bytes',
-                        'Content-Length': contentLength,
-                        'Content-Type': media[0].ContentType,
-                        'Content-Disposition': `inline; filename="${media[0].FileName}.${media[0].ContentType.split("/")[1]}"`,
-                    });
-    
-                    const stream = createReadStream(mediaPath, { start: chunkStart, end: chunkEnd });
-                    stream.pipe(res);
-                } else {
-                    res.writeHead(200, {
-                        'Content-Length': stats.size,
-                        'Content-Type': media[0].ContentType,
-                    });
-    
-                    const stream = createReadStream(mediaPath);
-                    stream.pipe(res);
-                }
-            } catch (error) {
-                if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                    return res.status(404).send('Media not found');
-                }
-    
-                console.error('Error serving media:', error);
-                return res.status(500).send('Internal Server Error');
-            }
-        }
-    });
+		const imageId = req.params.id;
+		const raw = req.query.raw === 'true';
 
-    server.get("/stats", async (req: Request, res: Response) => {
+		// Fetch the image from the database
+		const media = await db.statement('SELECT * FROM Images WHERE ID = ?', [
+			imageId,
+		]);
 
-        let totalStorage = 0;
-    
-        const images = await db.statement("SELECT * FROM Images");
-        const admins = await db.statement("SELECT * FROM Admins");
-    
-        images.forEach((image: any) => {
-            const type = image.ContentType.split("/")[0];
-            const imagePath = pJoin(picDir[type as keyof typeof picDir], image.FileName);
-            const stats = statSync(imagePath);
-            totalStorage += stats.size;
-        });
-    
-        admins.forEach((admin: any) => {
-            const imagePath = pJoin(picDir.avatar, admin.ProfilePicture);
-            const stats = statSync(imagePath);
-            totalStorage += stats.size;
-        });
-    
-        function formatBytes(bytes: number, decimals = 2) {
-            if (bytes === 0) return "0 Bytes";
-            const k = 1024;
-            const dm = decimals < 0 ? 0 : decimals;
-            const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-        }
-    
-        const memoryUsage = process.memoryUsage();
-        const totalMemory = os.totalmem();
-        const freeMemory = os.freemem();
-    
-        const stats = {
-            storage: {
-                title: "Storage Used (Images, Avatars, Videos)",
-                value: formatBytes(totalStorage),
-            },
-            images: {
-                title: "Total Media",
-                value: images.length,
-            },
-            memory: {
-                title: "Memory Usage",
-                value: `${formatBytes(memoryUsage.rss)} / ${formatBytes(memoryUsage.heapUsed)} / ${formatBytes(memoryUsage.external)}`
-            },
-            memorySystem: {
-                title: "System Memory",
-                value: `${formatBytes(totalMemory - freeMemory)} used / ${formatBytes(freeMemory)} free`,
-            },
-        }
-    
-        render(req, res, "stats", {
-            title: "Stats",
-            stats,
-        });
-    });
-    
+		if (media.length === 0) {
+			return res.status(404).send('Image not found');
+		}
 
-    server.get('/avatars/:fileName', async (req: RequestWithSession, res: Response) => {
-        const fileName = req.params.fileName;
+		if (!raw) {
+			// Update the view count
+			await db.statement('UPDATE Images SET Views = Views + 1 WHERE ID = ?', [
+				imageId,
+			]);
 
-        if (fileName === 'default.jpg') {
-            res.redirect("/assets/default.jpg");
-        }
+			const uploadedBy = await db.statement(
+				'SELECT * FROM Admins WHERE ID = ?',
+				[media[0].UploadedBy],
+			);
 
+			if (uploadedBy.length === 0) {
+				return res.status(404).send('Uploader not found');
+			}
 
-        const imagePath = pJoin(picDir.avatar, fileName);
+			// Render the image view page
+			return render(req, res, 'view', {
+				title: `${media[0].Caption}`,
+				image: media[0],
+				link: `https://${req.get('host')}/view/${imageId}?raw=true`,
+				canDelete:
+					!!req.session.user && req.session.user.Id === media[0].UploadedBy,
+				uploadedBy: uploadedBy[0],
+			});
+		} else {
+			const type = media[0].ContentType.split('/')[0];
+			const mediaPath = pJoin(
+				picDir[type as keyof typeof picDir],
+				media[0].FileName,
+			);
 
-        const exists = existsSync(imagePath);
+			if (!existsSync(mediaPath)) {
+				return res.status(404).send('Media not found');
+			}
 
-        if (!exists) {
-            return res.status(404).send('Image not found');
-        }
+			try {
+				const stats = statSync(mediaPath);
+				const range = req.headers.range;
 
-        try {
-            const stats = statSync(imagePath);
+				if (range) {
+					const [start, end] = range
+						.replace(/bytes=/, '')
+						.split('-')
+						.map(Number);
+					const fileSize = stats.size;
+					const chunkStart = Math.max(start, 0);
+					const chunkEnd = Math.min(end || fileSize - 1, fileSize - 1);
 
-            res.writeHead(200, {
-                'Content-Type': `image/${fileName.split('.').pop()}`,
-                'Content-Length': stats.size,
-            });
+					const contentLength = chunkEnd - chunkStart + 1;
 
-            const readStream = createReadStream(imagePath);
+					res.writeHead(206, {
+						'Content-Range': `bytes ${chunkStart}-${chunkEnd}/${fileSize}`,
+						'Accept-Ranges': 'bytes',
+						'Content-Length': contentLength,
+						'Content-Type': media[0].ContentType,
+						'Content-Disposition': `inline; filename="${media[0].FileName}.${media[0].ContentType.split('/')[1]}"`,
+					});
 
-            readStream.pipe(res);
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-                return res.status(404).send('Image not found');
-            }
+					const stream = createReadStream(mediaPath, {
+						start: chunkStart,
+						end: chunkEnd,
+					});
+					stream.pipe(res);
+				} else {
+					res.writeHead(200, {
+						'Content-Length': stats.size,
+						'Content-Type': media[0].ContentType,
+					});
 
-            console.error('Error serving image:', error);
-            return res.status(500).send('Internal Server Error');
-        }
-    });
+					const stream = createReadStream(mediaPath);
+					stream.pipe(res);
+				}
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+					return res.status(404).send('Media not found');
+				}
 
-    server.get("/admins/:username?", async (req: RequestWithSession, res: Response) => {
-        const adminUsername = req.params.username;
+				console.error('Error serving media:', error);
+				return res.status(500).send('Internal Server Error');
+			}
+		}
+	});
 
-        if (!adminUsername) {
-            const admins = await db.statement("SELECT * FROM Admins");
+	server.get('/stats', async (req: Request, res: Response) => {
+		let totalStorage = 0;
 
-            return render(req, res, "admins", {
-                title: "Admins",
-                admins,
-            });
-        }
+		const images = await db.statement('SELECT * FROM Images');
+		const admins = await db.statement('SELECT * FROM Admins');
 
-        const admin = await db.statement("SELECT * FROM Admins WHERE Username = ?", [adminUsername]);
+		images.forEach((image: any) => {
+			const type = image.ContentType.split('/')[0];
+			const imagePath = pJoin(
+				picDir[type as keyof typeof picDir],
+				image.FileName,
+			);
+			const stats = statSync(imagePath);
+			totalStorage += stats.size;
+		});
 
-        if (admin.length === 0) {
-            return res.status(404).send("Admin not found");
-        }
+		admins.forEach((admin: any) => {
+			const imagePath = pJoin(picDir.avatar, admin.ProfilePicture);
+			const stats = statSync(imagePath);
+			totalStorage += stats.size;
+		});
 
-        const recentUploads = await db.statement("SELECT * FROM Images WHERE UploadedBy = ? ORDER BY UploadedAt DESC LIMIT 5", [admin[0].Id]);
-        const allUploads = await db.statement("SELECT * FROM Images WHERE UploadedBy = ?", [admin[0].Id]);
+		function formatBytes(bytes: number, decimals = 2) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const dm = decimals < 0 ? 0 : decimals;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+		}
 
-        render(req, res, "admin", {
-            title: `Admin ${admin[0].Username}`,
-            user: admin[0],
-            link: `https://${req.get("host")}/admins/${admin[0].Username}`,
-            recentUploads,
-            timeDifference,
-            allUploads,
-        });
+		const memoryUsage = process.memoryUsage();
+		const totalMemory = os.totalmem();
+		const freeMemory = os.freemem();
 
-    });
+		const stats = {
+			storage: {
+				title: 'Storage Used (Images, Avatars, Videos)',
+				value: formatBytes(totalStorage),
+			},
+			images: {
+				title: 'Total Media',
+				value: images.length,
+			},
+			memory: {
+				title: 'Memory Usage',
+				value: `${formatBytes(memoryUsage.rss)} / ${formatBytes(memoryUsage.heapUsed)} / ${formatBytes(memoryUsage.external)}`,
+			},
+			memorySystem: {
+				title: 'System Memory',
+				value: `${formatBytes(totalMemory - freeMemory)} used / ${formatBytes(freeMemory)} free`,
+			},
+		};
 
-    server.get("/settings", async (req: RequestWithSession, res: Response) => {
-        if (!req.session.user) {
-            return res.redirect("/login?returnTo=/settings");
-        }
+		render(req, res, 'stats', {
+			title: 'Stats',
+			stats,
+		});
+	});
 
-        render(req, res, "settings", {
-            title: "Settings",
-            user: req.session.user,
-            error: null,
-        });
-    });
+	server.get(
+		'/avatars/:fileName',
+		async (req: RequestWithSession, res: Response) => {
+			const fileName = req.params.fileName;
 
-    server.post('/settings', uploadForAvatars.single('avatar'), async (req: RequestWithSession, res: Response) => {
-        if (!req.session.user) {
-            return res.redirect('/login?returnTo=/settings');
-        }
-    
-        if (req.file && !req.file.mimetype.startsWith('image/')) {
-            return res.status(400).send('Invalid file type. Only images are allowed.');
-        }
-    
-        const { username, bio } = req.body;
-    
-        if (!username || !bio) {
-            return res.status(400).send('Username and bio are required.');
-        }
-    
-        try {
-            const userId = req.session.user.Id;
-            let profilePicture = req.session.user.ProfilePicture;
-    
-            if (req.file) {
-                profilePicture = req.file.filename;
-            }
+			if (fileName === 'default.jpg') {
+				res.redirect('/assets/default.jpg');
+			}
 
-            if (req.file && req.session.user.ProfilePicture !== "default.jpg") {
-                const oldAvatarPath = pJoin(picDir.avatar, req.session.user.ProfilePicture);
-                const exists = existsSync(oldAvatarPath);
-                if (exists) {
-                    unlinkSync(oldAvatarPath);
-                }
-            }
-    
-            await db.statement('UPDATE Admins SET ProfilePicture = ?, Bio = ?, Username = ? WHERE Id = ?', [
-                profilePicture,
-                bio,
-                username,
-                userId,
-            ]);
-    
-            // Update session data
-            req.session.user.Username = username;
-            req.session.user.Bio = bio;
-            if (req.file) {
-                req.session.user.ProfilePicture = profilePicture;
-            }
-    
-            res.redirect('/settings');
-        } catch (error) {
-            console.error('Error updating settings:', error);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-    
+			const imagePath = pJoin(picDir.avatar, fileName);
+
+			const exists = existsSync(imagePath);
+
+			if (!exists) {
+				return res.status(404).send('Image not found');
+			}
+
+			try {
+				const stats = statSync(imagePath);
+
+				res.writeHead(200, {
+					'Content-Type': `image/${fileName.split('.').pop()}`,
+					'Content-Length': stats.size,
+				});
+
+				const readStream = createReadStream(imagePath);
+
+				readStream.pipe(res);
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+					return res.status(404).send('Image not found');
+				}
+
+				console.error('Error serving image:', error);
+				return res.status(500).send('Internal Server Error');
+			}
+		},
+	);
+
+	server.get(
+		'/admins/:username?',
+		async (req: RequestWithSession, res: Response) => {
+			const adminUsername = req.params.username;
+
+			if (!adminUsername) {
+				const admins = await db.statement('SELECT * FROM Admins');
+
+				return render(req, res, 'admins', {
+					title: 'Admins',
+					admins,
+				});
+			}
+
+			const admin = await db.statement(
+				'SELECT * FROM Admins WHERE Username = ?',
+				[adminUsername],
+			);
+
+			if (admin.length === 0) {
+				return res.status(404).send('Admin not found');
+			}
+
+			const recentUploads = await db.statement(
+				'SELECT * FROM Images WHERE UploadedBy = ? ORDER BY UploadedAt DESC LIMIT 5',
+				[admin[0].Id],
+			);
+			const allUploads = await db.statement(
+				'SELECT * FROM Images WHERE UploadedBy = ?',
+				[admin[0].Id],
+			);
+
+			render(req, res, 'admin', {
+				title: `Admin ${admin[0].Username}`,
+				user: admin[0],
+				link: `https://${req.get('host')}/admins/${admin[0].Username}`,
+				recentUploads,
+				timeDifference,
+				allUploads,
+			});
+		},
+	);
+
+	server.get('/settings', async (req: RequestWithSession, res: Response) => {
+		if (!req.session.user) {
+			return res.redirect('/login?returnTo=/settings');
+		}
+
+		render(req, res, 'settings', {
+			title: 'Settings',
+			user: req.session.user,
+			error: null,
+		});
+	});
+
+	server.post(
+		'/settings',
+		uploadForAvatars.single('avatar'),
+		async (req: RequestWithSession, res: Response) => {
+			if (!req.session.user) {
+				return res.redirect('/login?returnTo=/settings');
+			}
+
+			if (req.file && !req.file.mimetype.startsWith('image/')) {
+				return res
+					.status(400)
+					.send('Invalid file type. Only images are allowed.');
+			}
+
+			const { username, bio } = req.body;
+
+			if (!username || !bio) {
+				return res.status(400).send('Username and bio are required.');
+			}
+
+			try {
+				const userId = req.session.user.Id;
+				let profilePicture = req.session.user.ProfilePicture;
+
+				if (req.file) {
+					profilePicture = req.file.filename;
+				}
+
+				if (req.file && req.session.user.ProfilePicture !== 'default.jpg') {
+					const oldAvatarPath = pJoin(
+						picDir.avatar,
+						req.session.user.ProfilePicture,
+					);
+					const exists = existsSync(oldAvatarPath);
+					if (exists) {
+						unlinkSync(oldAvatarPath);
+					}
+				}
+
+				await db.statement(
+					'UPDATE Admins SET ProfilePicture = ?, Bio = ?, Username = ? WHERE Id = ?',
+					[profilePicture, bio, username, userId],
+				);
+
+				// Update session data
+				req.session.user.Username = username;
+				req.session.user.Bio = bio;
+				if (req.file) {
+					req.session.user.ProfilePicture = profilePicture;
+				}
+
+				res.redirect('/settings');
+			} catch (error) {
+				console.error('Error updating settings:', error);
+				res.status(500).send('Internal Server Error');
+			}
+		},
+	);
 
 	server.get('/delete/:id', async (req: RequestWithSession, res: Response) => {
 		if (!req.session.user) {
@@ -448,17 +486,18 @@ async function main(args: Arg[]) {
 			return res.status(404).send('Image not found');
 		}
 
-        const type = image[0].ContentType.split('/')[0]
-		const imagePath = pJoin(picDir[type as keyof typeof picDir], image[0].FileName);
+		const type = image[0].ContentType.split('/')[0];
+		const imagePath = pJoin(
+			picDir[type as keyof typeof picDir],
+			image[0].FileName,
+		);
 
+		const exists = existsSync(imagePath);
 
-        const exists = existsSync(imagePath);
+		if (!exists) {
+			return res.status(404).send('Image not found');
+		}
 
-        if (!exists) {
-            return res.status(404).send('Image not found');
-        }
-
-		
 		try {
 			await db.statement('DELETE FROM Images WHERE ID = ?', [imageId]);
 			unlinkSync(imagePath);
@@ -502,78 +541,83 @@ async function main(args: Arg[]) {
 		res.redirect(returnUrl ? (returnUrl as string) : '/');
 	});
 
-    server.get('/register', (req: Request, res: Response) => {
-        const returnUrl = req.query.returnTo || null;
-        render(req, res, 'register', {
-            title: 'Register',
-            error: null,
-            returnUrl,
-        });
-    });
+	server.get('/register', (req: Request, res: Response) => {
+		const returnUrl = req.query.returnTo || null;
+		render(req, res, 'register', {
+			title: 'Register',
+			error: null,
+			returnUrl,
+		});
+	});
 
 	server.post('/register', async (req, res) => {
-        const { username, password, masterKey } = req.body;
-        const returnUrl = req.query.returnTo || null;
-    
-        const pMasterKey = process.env.MASTER_KEY;
-    
-        // Check for missing fields
-        if (!username || !password || !masterKey) {
-            return render(req, res, 'register', {
-                title: 'Register',
-                error: 'Please provide a username, password, and master key.',
-                returnUrl,
-            });
-        }
-    
-        // Validate master key
-        if (masterKey.trim() !== pMasterKey) {
-            return render(req, res, 'register', {
-                title: 'Register',
-                error: 'Invalid master key.',
-                returnUrl,
-            });
-        }
-    
-        try {
-            // Check if the username already exists
-            const userExists = await db.statement('SELECT * FROM Admins WHERE Username = ?', [username.toLowerCase().trim()]);
-            if (userExists.length > 0) {
-                return render(req, res, 'register', {
-                    title: 'Register',
-                    error: 'Username already exists.',
-                    returnUrl,
-                });
-            }
-    
-            // Hash the password
-            const hashedPassword = await bcrypt.hash(password, 10);
-    
-            // Insert new user into the database
-            await db.statement('INSERT INTO Admins (Username, Password, ProfilePicture, Bio) VALUES (?, ?, ?, ?)', [
-                username.toLowerCase().trim(),
-                hashedPassword,
-                'default.jpg',
-                `Hello, I'm ${username}!`,
-            ]);
-    
-            // Redirect to login page after successful registration
-            res.redirect('/login');
-        } catch (error) {
-            console.error('Error registering user:', error);
-            res.status(500).send('Internal Server Error');
-        }
-    });
-    
+		const { username, password, masterKey } = req.body;
+		const returnUrl = req.query.returnTo || null;
+
+		const pMasterKey = process.env.MASTER_KEY;
+
+		// Check for missing fields
+		if (!username || !password || !masterKey) {
+			return render(req, res, 'register', {
+				title: 'Register',
+				error: 'Please provide a username, password, and master key.',
+				returnUrl,
+			});
+		}
+
+		// Validate master key
+		if (masterKey.trim() !== pMasterKey) {
+			return render(req, res, 'register', {
+				title: 'Register',
+				error: 'Invalid master key.',
+				returnUrl,
+			});
+		}
+
+		try {
+			// Check if the username already exists
+			const userExists = await db.statement(
+				'SELECT * FROM Admins WHERE Username = ?',
+				[username.toLowerCase().trim()],
+			);
+			if (userExists.length > 0) {
+				return render(req, res, 'register', {
+					title: 'Register',
+					error: 'Username already exists.',
+					returnUrl,
+				});
+			}
+
+			// Hash the password
+			const hashedPassword = await bcrypt.hash(password, 10);
+
+			// Insert new user into the database
+			await db.statement(
+				'INSERT INTO Admins (Username, Password, ProfilePicture, Bio) VALUES (?, ?, ?, ?)',
+				[
+					username.toLowerCase().trim(),
+					hashedPassword,
+					'default.jpg',
+					`Hello, I'm ${username}!`,
+				],
+			);
+
+			// Redirect to login page after successful registration
+			res.redirect('/login');
+		} catch (error) {
+			console.error('Error registering user:', error);
+			res.status(500).send('Internal Server Error');
+		}
+	});
 
 	server.get('/upload/:type?', (req: RequestWithSession, res: Response) => {
 		if (!req.session.user) {
 			return res.redirect('/login?returnTo=/upload');
 		}
 
-        if (req.params.type && !['image', 'video'].includes(req.params.type)) {
-            return res.status(400).send('Invalid type');
-        }
+		if (req.params.type && !['image', 'video'].includes(req.params.type)) {
+			return res.status(400).send('Invalid type');
+		}
 
 		render(req, res, `upload-${req.params.type || 'image'}`, {
 			title: 'Upload',
@@ -582,88 +626,88 @@ async function main(args: Arg[]) {
 	});
 
 	server.post('/upload-image', (req: RequestWithSession, res: Response) => {
-        if (!req.session.user) {
-            return res.redirect('/login?returnTo=/upload');
-        }
+		if (!req.session.user) {
+			return res.redirect('/login?returnTo=/upload');
+		}
 
-        uploadForImages.single('image')(req, res, async (err: any) => {
-            if (err) {
-                console.error('Error uploading image:', err);
-                return res.status(500).send('Internal Server Error');
-            }
-    
-            if (!req.file) {
-                return res.status(400).send('Bad Request');
-            }
-    
-            const { caption } = req.body;
-            const id = generateId();
-            const contentType = req.file.mimetype;
-            const currentDate = new Date();
-            const uploadedBy = req.session.user.Id;
-    
-            try {
-                await db.statement(
-                    'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        id,
-                        req.file.filename, // Keep the original file name
-                        caption,
-                        contentType,
-                        0,
-                        currentDate,
-                        uploadedBy,
-                    ],
-                );
-                res.redirect(`/view/${id}`);
-            } catch (error) {
-                console.error('Error uploading image:', error);
-                res.status(500).send('Internal Server Error');
-            }
-        });
-    });
+		uploadForImages.single('image')(req, res, async (err: any) => {
+			if (err) {
+				console.error('Error uploading image:', err);
+				return res.status(500).send('Internal Server Error');
+			}
 
-    server.post('/upload-video', (req: RequestWithSession, res: Response) => {
-        if (!req.session.user) {
-            return res.redirect('/login?returnTo=/upload/video');
-        }
+			if (!req.file) {
+				return res.status(400).send('Bad Request');
+			}
 
-        uploadForVideos.single('video')(req, res, async (err: any) => {
-            if (err) {
-                console.error('Error uploading video:', err);
-                return res.status(500).send('Internal Server Error');
-            }
-    
-            if (!req.file) {
-                return res.status(400).send('Bad Request');
-            }
-    
-            const { caption } = req.body;
-            const id = generateId();
-            const contentType = req.file.mimetype;
-            const currentDate = new Date();
-            const uploadedBy = req.session.user.Id;
-    
-            try {
-                await db.statement(
-                    'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        id,
-                        req.file.filename, // Keep the original file name
-                        caption,
-                        contentType,
-                        0,
-                        currentDate,
-                        uploadedBy,
-                    ],
-                );
-                res.redirect(`/view/${id}`);
-            } catch (error) {
-                console.error('Error uploading video:', error);
-                res.status(500).send('Internal Server Error');
-            }
-        });
-    });
+			const { caption } = req.body;
+			const id = generateId();
+			const contentType = req.file.mimetype;
+			const currentDate = new Date();
+			const uploadedBy = req.session.user.Id;
+
+			try {
+				await db.statement(
+					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
+					[
+						id,
+						req.file.filename, // Keep the original file name
+						caption,
+						contentType,
+						0,
+						currentDate,
+						uploadedBy,
+					],
+				);
+				res.redirect(`/view/${id}`);
+			} catch (error) {
+				console.error('Error uploading image:', error);
+				res.status(500).send('Internal Server Error');
+			}
+		});
+	});
+
+	server.post('/upload-video', (req: RequestWithSession, res: Response) => {
+		if (!req.session.user) {
+			return res.redirect('/login?returnTo=/upload/video');
+		}
+
+		uploadForVideos.single('video')(req, res, async (err: any) => {
+			if (err) {
+				console.error('Error uploading video:', err);
+				return res.status(500).send('Internal Server Error');
+			}
+
+			if (!req.file) {
+				return res.status(400).send('Bad Request');
+			}
+
+			const { caption } = req.body;
+			const id = generateId();
+			const contentType = req.file.mimetype;
+			const currentDate = new Date();
+			const uploadedBy = req.session.user.Id;
+
+			try {
+				await db.statement(
+					'INSERT INTO Images (Id, FileName, Caption, ContentType, Views, UploadedAt, UploadedBy) VALUES (?, ?, ?, ?, ?, ?, ?)',
+					[
+						id,
+						req.file.filename, // Keep the original file name
+						caption,
+						contentType,
+						0,
+						currentDate,
+						uploadedBy,
+					],
+				);
+				res.redirect(`/view/${id}`);
+			} catch (error) {
+				console.error('Error uploading video:', error);
+				res.status(500).send('Internal Server Error');
+			}
+		});
+	});
 
 	server.get('/logout', (req: RequestWithSession, res: Response) => {
 		if (!req.session.user) {
@@ -677,72 +721,82 @@ async function main(args: Arg[]) {
 		});
 	});
 
-    server.get("/api/get-images", async (req: Request, res: Response) => {
-        const by = req.query.by as string;
-        const sort = req.query.sort as string;
-        const order = req.query.order as string;
-        const limit = req.query.limit as string;
-        const type = req.query.type as string;
-    
-        if (!by) {
-            return res.status(400).json({ error: "Missing 'by' query parameter. This must be a user ID." });
-        }
-    
-        // Validate and sanitize inputs
-        const sortValid = ["ASC", "DESC"];
-        const orderValid = ["UploadedAt", "Views"];
-    
-        let query = "SELECT * FROM Images WHERE UploadedBy = ?";
-        const queryParams: any[] = [by];
-    
-        // Determine the order by column and direction
-        let orderByClause = '';
-        if (order && orderValid.includes(order)) {
-            if (order === "Views") {
-                // Order by Views in descending order if 'Views' is selected
-                orderByClause = ` ORDER BY Views DESC`;
-            } else {
-                // Default sort direction
-                const sortDirection = sort && sortValid.includes(sort.toUpperCase()) ? sort.toUpperCase() : 'ASC';
-                orderByClause = ` ORDER BY ${order} ${sortDirection}`;
-            }
-        }
-    
-        if (orderByClause) {
-            query += orderByClause;
-        }
-    
-        if (limit) {
-            // Ensure limit is a valid integer
-            const limitInt = parseInt(limit, 10);
-            if (isNaN(limitInt) || limitInt <= 0) {
-                return res.status(400).json({ error: "Invalid 'limit' query parameter. It must be a positive integer." });
-            }
-            query += ` LIMIT ?`;
-            queryParams.push(limitInt);
-        }
+	server.get('/api/get-images', async (req: Request, res: Response) => {
+		const by = req.query.by as string;
+		const sort = req.query.sort as string;
+		const order = req.query.order as string;
+		const limit = req.query.limit as string;
+		const type = req.query.type as string;
 
-        
-    
-        try {
-            // Execute the query with parameters
-            if (postCache.has(query)) {
-                const cached = postCache.get(query);
-                return res.json(cached);
-            }
+		if (!by) {
+			return res
+				.status(400)
+				.json({
+					error: "Missing 'by' query parameter. This must be a user ID.",
+				});
+		}
 
-            let images = await db.statement(query, queryParams);
+		// Validate and sanitize inputs
+		const sortValid = ['ASC', 'DESC'];
+		const orderValid = ['UploadedAt', 'Views'];
 
-            query += ` AND ContentType LIKE ?`;
-            queryParams.push(`${type === 'videos' ? 'video' : 'image'}%`);
+		let query = 'SELECT * FROM Images WHERE UploadedBy = ?';
+		const queryParams: any[] = [by];
 
-            postCache.set(query, images);
-            res.json(images);
-        } catch (error) {
-            console.error('Error fetching images:', error);
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    });
+		// Determine the order by column and direction
+		let orderByClause = '';
+		if (order && orderValid.includes(order)) {
+			if (order === 'Views') {
+				// Order by Views in descending order if 'Views' is selected
+				orderByClause = ` ORDER BY Views DESC`;
+			} else {
+				// Default sort direction
+				const sortDirection =
+					sort && sortValid.includes(sort.toUpperCase()) ?
+						sort.toUpperCase()
+					:	'ASC';
+				orderByClause = ` ORDER BY ${order} ${sortDirection}`;
+			}
+		}
+
+		if (orderByClause) {
+			query += orderByClause;
+		}
+
+		if (limit) {
+			// Ensure limit is a valid integer
+			const limitInt = parseInt(limit, 10);
+			if (isNaN(limitInt) || limitInt <= 0) {
+				return res
+					.status(400)
+					.json({
+						error:
+							"Invalid 'limit' query parameter. It must be a positive integer.",
+					});
+			}
+			query += ` LIMIT ?`;
+			queryParams.push(limitInt);
+		}
+
+		try {
+			// Execute the query with parameters
+			if (postCache.has(query)) {
+				const cached = postCache.get(query);
+				return res.json(cached);
+			}
+
+			let images = await db.statement(query, queryParams);
+
+			query += ` AND ContentType LIKE ?`;
+			queryParams.push(`${type === 'videos' ? 'video' : 'image'}%`);
+
+			postCache.set(query, images);
+			res.json(images);
+		} catch (error) {
+			console.error('Error fetching images:', error);
+			res.status(500).json({ error: 'Internal Server Error' });
+		}
+	});
 
 	server.listen(port, host, async () => {
 		console.log(`Server running at http://${host}:${port}`);

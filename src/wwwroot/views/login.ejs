@@ -22,27 +22,27 @@
 		></script>
 	</head>
 	<body>
-	<%- include('_partials/header') %>
+		<%- include('_partials/header') %>
 
 		<div class="container">
 			<div class="row">
 				<div class="col-md-6 offset-md-3">
 					<h1 class="text-center">Login</h1>
-					
+
 					<% if (error != null) { %>
-						<div class="alert alert-danger" role="alert">
-							<%= error %>
-						</div>
-					<% } %>		
-					
+					<div class="alert alert-danger" role="alert"><%= error %></div>
+					<% } %>
+
 					<% if (logout != false && logout != null && error == null) { %>
-						<div class="alert alert-success" role="alert">
-							You have been logged out successfully.
-						</div>
+					<div class="alert alert-success" role="alert">
+						You have been logged out successfully.
+					</div>
 					<% } %>
 					<form action="/login?returnTo=<%= returnUrl %>" method="post">
 						<div class="mb-3">
-							<label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+							<label for="username" class="form-label"
+								>Username <span class="text-danger">*</span></label
+							>
 							<input
 								type="text"
 								class="form-control"
@@ -52,7 +52,9 @@
 							/>
 						</div>
 						<div class="mb-3">
-							<label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+							<label for="password" class="form-label"
+								>Password <span class="text-danger">*</span></label
+							>
 							<input
 								type="password"
 								class="form-control"

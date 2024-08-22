@@ -22,7 +22,7 @@
 		></script>
 	</head>
 	<body>
-	<%- include('_partials/header') %>
+		<%- include('_partials/header') %>
 
 		<div class="container">
 			<div class="row">
@@ -30,20 +30,26 @@
 				<div class="col-md-6 offset-md-3">
 					<h1 class="text-center">Stats</h1>
 
-					<div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
+					<div
+						class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center"
+					>
 						<div class="list-group">
-						  <% for (const key in stats) { %>
-							<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+							<% for (const key in stats) { %>
+							<a
+								href="#"
+								class="list-group-item list-group-item-action d-flex gap-3 py-3"
+								aria-current="true"
+							>
 								<div class="d-flex gap-2 w-100 justify-content-between">
-								  <div>
-									<h6 class="mb-0"><%= stats[key].title %></h6>
-									<p class="mb-0 opacity-75"><%= stats[key].value %></p>
-								  </div>
+									<div>
+										<h6 class="mb-0"><%= stats[key].title %></h6>
+										<p class="mb-0 opacity-75"><%= stats[key].value %></p>
+									</div>
 								</div>
-							  </a>
-						  <% } %>
+							</a>
+							<% } %>
 						</div>
-					  </div>
+					</div>
 				</div>
 			</div>
 		</div>

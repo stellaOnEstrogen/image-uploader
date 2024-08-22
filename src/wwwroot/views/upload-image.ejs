@@ -27,18 +27,21 @@
 			<div class="row">
 				<div class="col-md-6 offset-md-3">
 					<h1 class="text-center">Upload</h1>
-					
+
 					<% if (error != null) { %>
-						<div class="alert alert-danger" role="alert">
-							<%= error %>
-						</div>
-					<% } %>		
+					<div class="alert alert-danger" role="alert"><%= error %></div>
+					<% } %>
 
 					<div class="alert alert-warning" role="alert">
-						You can only upload images in the following formats: JPEG, PNG, GIF, and WebP.
+						You can only upload images in the following formats: JPEG, PNG, GIF,
+						and WebP.
 					</div>
-					
-					<form action="/upload-image" method="post" enctype="multipart/form-data">
+
+					<form
+						action="/upload-image"
+						method="post"
+						enctype="multipart/form-data"
+					>
 						<div class="mb-3">
 							<label for="caption" class="form-label">Caption</label>
 							<input

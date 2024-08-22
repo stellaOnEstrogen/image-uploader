@@ -17,6 +17,6 @@ export async function render(
 	res.render(page, {
 		...options,
 		...constants,
-		userData : userData ? userData : null,
+		userData: userData ? userData : null,
 	});
 }

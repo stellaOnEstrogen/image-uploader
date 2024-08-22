@@ -22,22 +22,21 @@
 		></script>
 	</head>
 	<body>
-	<%- include('_partials/header') %>
+		<%- include('_partials/header') %>
 		<div class="container">
 			<div class="row">
 				<div class="col-md-6 offset-md-3">
 					<h1 class="text-center">Register</h1>
-					
+
 					<% if (error != null) { %>
-						<div class="alert alert-danger" role="alert">
-							<%= error %>
-						</div>
-					<% } %>		
-					
-	
+					<div class="alert alert-danger" role="alert"><%= error %></div>
+					<% } %>
+
 					<form action="/register?returnTo=<%= returnUrl %>" method="post">
 						<div class="mb-3">
-							<label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+							<label for="username" class="form-label"
+								>Username <span class="text-danger">*</span></label
+							>
 							<input
 								type="text"
 								class="form-control"
@@ -47,7 +46,9 @@
 							/>
 						</div>
 						<div class="mb-3">
-							<label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+							<label for="password" class="form-label"
+								>Password <span class="text-danger">*</span></label
+							>
 							<input
 								type="password"
 								class="form-control"
@@ -56,20 +57,23 @@
 								required
 							/>
 						</div>
-                        <div class="mb-3">
-                            <label for="masterKey" class="form-label">Master Key <span class="text-danger">*</span></label>       
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="masterKey"
-                                name="masterKey"
-                                required
-                            />
-                        </div>
-                            
+						<div class="mb-3">
+							<label for="masterKey" class="form-label"
+								>Master Key <span class="text-danger">*</span></label
+							>
+							<input
+								type="text"
+								class="form-control"
+								id="masterKey"
+								name="masterKey"
+								required
+							/>
+						</div>
+
 						<!-- Show a note about the master key -->
 						<div class="alert alert-warning" role="alert">
-							<strong>Note:</strong> The master key is required to register. Please contact the administrator for the master key.
+							<strong>Note:</strong> The master key is required to register.
+							Please contact the administrator for the master key.
 						</div>
 						<button type="submit" class="btn btn-primary">Register</button>
 					</form>

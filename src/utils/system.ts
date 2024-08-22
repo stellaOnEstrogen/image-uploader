@@ -55,9 +55,14 @@ export function isFirstTimeSetup(): boolean {
 	return !fs.existsSync(path.join(getAppDataDir(), 'app.db'));
 }
 
-export function getPictureDirs(): { avatar: string; video: string; image: string; base: string } {
+export function getPictureDirs(): {
+	avatar: string;
+	video: string;
+	image: string;
+	base: string;
+} {
 	if (PIC_DIR) {
-		const base =  path.resolve(PIC_DIR);
+		const base = path.resolve(PIC_DIR);
 
 		const dirs = {
 			avatar: path.join(base, 'avatar'),
