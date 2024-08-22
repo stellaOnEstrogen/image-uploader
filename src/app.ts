@@ -28,6 +28,8 @@ import RequestWithSession from './interfaces/RequestWithSession';
 import { reminders } from './utils/reminder';
 import { makeBot, checkIfBotExists, makeBotAvatar } from './utils/botAccounts';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const generalRateLimit = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
 	max: 100,
@@ -47,9 +49,6 @@ const postCache = new NodeCache({
 });
 
 async function main(args: Arg[]) {
-	if (isFirstTimeSetup()) {
-		await firstTimeSetup();
-	}
 
 	const envPath = args.find((arg) => arg.name === 'env')?.value;
 
@@ -745,6 +744,13 @@ async function main(args: Arg[]) {
 	});
 
 	server.listen(port, host, async () => {
+        if (isFirstTimeSetup()) {
+            await firstTimeSetup();
+        }
+
+        // Give the database some time to start up
+        sleep(3000);
+
 		const botExists = await checkIfBotExists('Futaba_Anzu');
 		if (!botExists) {
 			if (!process.env.DEFAULT_BOT_PASSWORD) {
