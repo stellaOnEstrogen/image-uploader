@@ -73,8 +73,6 @@ export async function makeBotAvatar(
 		const defaultAvatarFile = join(dir);
 		const avatarFile = `${uuid}.${dir.split('.').pop()}`;
 
-		console.log('avatarDir', avatarDir);
-		console.log('defaultAvatarFile', defaultAvatarFile);
 		fs.copyFileSync(defaultAvatarFile, join(avatarDir, avatarFile));
 
 		// Update the avatar in the database
