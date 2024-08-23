@@ -32,7 +32,7 @@ function readDirFile() {
 
 	if (fs.existsSync(LOOKUP)) {
 		const data = fs.readFileSync(LOOKUP, 'utf-8');
-		
+
 		const lines = data.split('\n');
 
 		if (lines.length > 0) {

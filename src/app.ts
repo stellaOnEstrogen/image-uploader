@@ -41,7 +41,6 @@ const postCache = new NodeCache({
 });
 
 async function main(args: Arg[]) {
-
 	const envPath = args.find((arg) => arg.name === 'env')?.value;
 
 	dotenv({
@@ -258,35 +257,37 @@ async function main(args: Arg[]) {
 			stats,
 		});
 	});
-	server.get('/avatars/:fileName', async (req: RequestWithSession, res: Response) => {
-		const fileName = req.params.fileName;
-	
-		// Redirect to a default image if the requested filename is 'default.jpg'
-		if (fileName === 'default.jpg') {
-			return res.redirect('/assets/default.jpg');
-		}
-	
-		const imagePath = pJoin(picDir.avatar, fileName);
-	
-		// Check if the file exists
-		if (!existsSync(imagePath)) {
-			return res.status(404).send('Image not found');
-		}
-	
-		try {
-			// Use res.sendFile to serve the file without manually creating a read stream
-			res.sendFile(imagePath, (err) => {
-				if (err) {
-					console.error('Error sending image file:', err);
-					res.status(500).send('Internal Server Error');
-				}
-			});
-		} catch (error) {
-			console.error('Error serving image:', error);
-			res.status(500).send('Internal Server Error');
-		}
-	});
-	
+	server.get(
+		'/avatars/:fileName',
+		async (req: RequestWithSession, res: Response) => {
+			const fileName = req.params.fileName;
+
+			// Redirect to a default image if the requested filename is 'default.jpg'
+			if (fileName === 'default.jpg') {
+				return res.redirect('/assets/default.jpg');
+			}
+
+			const imagePath = pJoin(picDir.avatar, fileName);
+
+			// Check if the file exists
+			if (!existsSync(imagePath)) {
+				return res.status(404).send('Image not found');
+			}
+
+			try {
+				// Use res.sendFile to serve the file without manually creating a read stream
+				res.sendFile(imagePath, (err) => {
+					if (err) {
+						console.error('Error sending image file:', err);
+						res.status(500).send('Internal Server Error');
+					}
+				});
+			} catch (error) {
+				console.error('Error serving image:', error);
+				res.status(500).send('Internal Server Error');
+			}
+		},
+	);
 
 	server.get(
 		'/admins/:username?',
@@ -715,12 +716,12 @@ async function main(args: Arg[]) {
 	});
 
 	server.listen(port, host, async () => {
-        if (isFirstTimeSetup()) {
-            await firstTimeSetup();
-        }
+		if (isFirstTimeSetup()) {
+			await firstTimeSetup();
+		}
 
-        // Give the database some time to start up
-        sleep(3000);
+		// Give the database some time to start up
+		sleep(3000);
 
 		const botExists = await checkIfBotExists('Futaba_Anzu');
 		if (!botExists) {
