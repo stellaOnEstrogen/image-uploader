@@ -258,45 +258,35 @@ async function main(args: Arg[]) {
 			stats,
 		});
 	});
-
-	server.get(
-		'/avatars/:fileName',
-		async (req: RequestWithSession, res: Response) => {
-			const fileName = req.params.fileName;
-
-			if (fileName === 'default.jpg') {
-				res.redirect('/assets/default.jpg');
-			}
-
-			const imagePath = pJoin(picDir.avatar, fileName);
-
-			const exists = existsSync(imagePath);
-
-			if (!exists) {
-				return res.status(404).send('Image not found');
-			}
-
-			try {
-				const stats = statSync(imagePath);
-
-				res.writeHead(200, {
-					'Content-Type': `image/${fileName.split('.').pop()}`,
-					'Content-Length': stats.size,
-				});
-
-				const readStream = createReadStream(imagePath);
-
-				readStream.pipe(res);
-			} catch (error) {
-				if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-					return res.status(404).send('Image not found');
+	server.get('/avatars/:fileName', async (req: RequestWithSession, res: Response) => {
+		const fileName = req.params.fileName;
+	
+		// Redirect to a default image if the requested filename is 'default.jpg'
+		if (fileName === 'default.jpg') {
+			return res.redirect('/assets/default.jpg');
+		}
+	
+		const imagePath = pJoin(picDir.avatar, fileName);
+	
+		// Check if the file exists
+		if (!existsSync(imagePath)) {
+			return res.status(404).send('Image not found');
+		}
+	
+		try {
+			// Use res.sendFile to serve the file without manually creating a read stream
+			res.sendFile(imagePath, (err) => {
+				if (err) {
+					console.error('Error sending image file:', err);
+					res.status(500).send('Internal Server Error');
 				}
-
-				console.error('Error serving image:', error);
-				return res.status(500).send('Internal Server Error');
-			}
-		},
-	);
+			});
+		} catch (error) {
+			console.error('Error serving image:', error);
+			res.status(500).send('Internal Server Error');
+		}
+	});
+	
 
 	server.get(
 		'/admins/:username?',
