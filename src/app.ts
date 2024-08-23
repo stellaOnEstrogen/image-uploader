@@ -27,6 +27,7 @@ import NodeCache from 'node-cache';
 import RequestWithSession from './interfaces/RequestWithSession';
 import { reminders } from './utils/reminder';
 import { makeBot, checkIfBotExists, makeBotAvatar } from './utils/botAccounts';
+import logger from './middleware/logger';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -78,6 +79,7 @@ async function main(args: Arg[]) {
 			},
 		}),
 	);
+	server.use(logger);
 
 	server.get('/', async (req: RequestWithSession, res: Response) => {
 		const media = await db.statement(

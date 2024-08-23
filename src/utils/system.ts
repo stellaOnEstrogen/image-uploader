@@ -119,3 +119,13 @@ export function getPictureDirs(): {
 		return dirs;
 	}
 }
+
+export function mkdir(dir: string): void {
+	if (!fs.existsSync(dir)) {
+		fs.mkdirSync(dir, { recursive: true });
+	}
+}
+
+export function dirDoesExist(dir: string): boolean {
+	return fs.existsSync(dir);
+}
