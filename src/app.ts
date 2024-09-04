@@ -259,6 +259,7 @@ async function main(args: Arg[]) {
 			stats,
 		});
 	});
+
 	server.get(
 		'/avatars/:fileName',
 		async (req: RequestWithSession, res: Response) => {
