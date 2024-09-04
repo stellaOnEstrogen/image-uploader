@@ -1,15 +1,3 @@
-/**
- * What it should look like:
- * [
-    {
-        "name": "port",
-        "value": 3000,
-    }
-]
-
-my-app --port 3000
- */
-
 class ArgParser {
 	private args: string[];
 
